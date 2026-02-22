@@ -1,0 +1,12 @@
+Analyzing Project 08...                                         
+
+   info - Use 'const' with the constructor to improve performance - lib\screens\home_page.dart:29:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\home_page.dart:31:32 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\home_page.dart:32:37 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\screens\home_page.dart:41:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\reports_history_page.dart:51:16 - prefer_const_constructors
+   info - Statements in an if should be enclosed in a block - lib\screens\reports_history_page.dart:73:15 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\reports_history_page.dart:75:15 - curly_braces_in_flow_control_structures
+   info - Use 'const' with the constructor to improve performance - lib\screens\review_report_page.dart:83:28 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\screens\review_report_page.dart:84:33 - prefer_const_literals_to_create_immutables
+

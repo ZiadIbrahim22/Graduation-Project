@@ -1,0 +1,44 @@
+name: reporting_system
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  http: ^1.2.0
+  flutter_localizations:
+    sdk: flutter
+  flutter:
+    sdk: flutter
+  fl_chart: ^0.66.0
+  image_picker: ^1.0.7
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.2
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geocoding: ^2.1.0
+  rename: ^3.1.0
+  google_maps_flutter: ^2.5.3  # لعرض الخريطة
+  geolocator: ^10.1.0          # للحصول على موقع اليوزر الحالي (GPS)
+  shared_preferences: ^2.3.3
+  flutter_image_compress: ^2.3.0
+  jwt_decoder: ^2.0.1
+  timeago: ^3.7.0
+  toastification: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: "^0.13.1"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/App_Icon.PNG"
+  min_sdk_android: 21
+
+flutter:
+  uses-material-design: true
