@@ -65,8 +65,8 @@ class ApiService {
     request.fields['Description'] = description;
     request.fields['Category'] = category;
     request.fields['Location'] = location;
-    request.fields['aiTag'] = aiTag ?? '';
-    request.fields['confidence'] = confidence?.toString() ?? '';
+    // request.fields['aiTag'] = aiTag ?? '';
+    // request.fields['confidence'] = confidence?.toString() ?? '';
 
     // Add Image
     if (image != null) {
