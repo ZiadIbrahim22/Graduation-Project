@@ -49,7 +49,7 @@ class ApiService {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/CreateReport'),                              // API for submit report
+          '${ApiConfig.baseUrl}/api/Reports/CreateReport'),                     // API for submit report
     );
 
     // Add Token to Header
@@ -104,7 +104,7 @@ class ApiService {
   static Future<List<dynamic>> fetchNotifications(String token) async {
     final response = await http.get(
       Uri.parse(
-          '${ApiConfig.baseUrl}/notifications'),                                 // API for fetch notifications
+          '${ApiConfig.baseUrl}/api/Notifications/GetMyNotifications'),                                 // API for fetch notifications
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -124,9 +124,11 @@ class ApiService {
           return [];
         }
       } catch (e) {
+        print("Error parsing notifications: $e");
         throw Exception(response.body);
       }
     } else {
+      print("Failed to fetch notifications: ${response.body}");
       throw Exception('Failed to fetch notifications: ${response.body}');
     }
   }

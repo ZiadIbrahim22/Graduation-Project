@@ -242,23 +242,24 @@ class _ReviewReportPageState extends State<ReviewReportPage>
 
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // إخفاء التحميل
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.error, color: Colors.white), // أيقونة خطأ
-              const SizedBox(width: 10),
-              Text('Error: ${e.toString()}'), // الرسالة
-            ],
+      if(mounted){
+        Navigator.pop(context); // إخفاء التحميل
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white), // أيقونة خطأ
+                const SizedBox(width: 10),
+                Text('Error: ${e.toString()}'), // الرسالة
+              ],
+            ),
+            backgroundColor: Colors.red, // لون الخلفية أحمر للخطأ
+            behavior: SnackBarBehavior.floating, // يخلي الإشعار طاير مش لازق تحت
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 3), // يختفي بعد 3 ثواني
           ),
-          backgroundColor: Colors.red, // لون الخلفية أحمر للخطأ
-          behavior: SnackBarBehavior.floating, // يخلي الإشعار طاير مش لازق تحت
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 3), // يختفي بعد 3 ثواني
-        ),
-      );
+        );
+      }
     }
   }
-
 }

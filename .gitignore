@@ -59,6 +59,9 @@ build/
 ios/Pods/
 android/.gradle/
 android/app/build/
+.metadata
+analysis.txt
+analysis_output.txt
 
 # Misc
 *.log
