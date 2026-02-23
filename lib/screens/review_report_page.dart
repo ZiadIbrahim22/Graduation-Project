@@ -123,30 +123,29 @@ class _ReviewReportPageState extends State<ReviewReportPage>
 
                       const SizedBox(height: 20),
 
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFf97316).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFf97316)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber,
-                                color: Color(0xFFf97316)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                "${"AI_Classification_Result_Traffic_Accident_Severity_High"
-                                    .tr}${widget.reportData['severity']}",
-                                style: const TextStyle(
-                                    color: Color(0xFFc2410c),
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      // Container(
+                      //   padding: const EdgeInsets.all(12),
+                      //   decoration: BoxDecoration(
+                      //     color: const Color(0xFFf97316).withValues(alpha: 0.1),
+                      //     borderRadius: BorderRadius.circular(12),
+                      //     border: Border.all(color: const Color(0xFFf97316)),
+                      //   ),
+                        // child: Row(
+                        //   children: [
+                        //     const Icon(Icons.warning_amber,
+                        //         color: Color(0xFFf97316)),
+                        //     const SizedBox(width: 12),
+                        //     Expanded(
+                        //       child: Text(
+                        //         "AI Classification: ${widget.reportData['aiTag'] ?? 'Analyzing...'}",
+                        //         style: const TextStyle(
+                        //             color: Color(0xFFc2410c),
+                        //             fontWeight: FontWeight.w600),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                      // ),
 
                       const SizedBox(height: 16),
                       Text(
@@ -222,12 +221,17 @@ class _ReviewReportPageState extends State<ReviewReportPage>
       if (!mounted) return;
       Navigator.pop(context); // إخفاء التحميل
 
+      String aiTag = result['aiTag'] ?? '';
+      double realConfidence = (result['confidence'] as num).toDouble();
+
       // 4. الانتقال لصفحة النجاح
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ReportSubmittedPage(
             reportId: result['reportId']?.toString() ?? 'N/A', // أو الـ ID اللي راجع من السيرفر
+            aiTag: aiTag,
+            confidence: realConfidence * 100,
           ),
         ),
       );

@@ -7,7 +7,7 @@ import 'report_status_page.dart';
 class ReportSubmittedPage extends StatefulWidget {
   final String reportId;
 
-  const ReportSubmittedPage({super.key, required this.reportId});
+  const ReportSubmittedPage({super.key, required this.reportId, required double confidence, required String aiTag});
 
   @override
   State<ReportSubmittedPage> createState() => _ReportSubmittedPageState();

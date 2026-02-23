@@ -55,6 +55,10 @@ class LocalizationService {
       'estimated_time': 'Estimated time:',
       'days': 'days',
       'report_not_found': 'Report not found',
+      'ai_tag': 'AI Tag',
+      'confidence': 'Confidence',
+      'unknown_tag': 'Unknown Tag',
+      'user_choice': 'User Choice',
 
       // Create Report
       'short_title': 'Short Title',
@@ -261,6 +265,10 @@ class LocalizationService {
       'estimated_time': 'الوقت المتوقع:',
       'days': 'أيام',
       'report_not_found': 'البلاغ غير موجود',
+      'ai_tag': 'تصنيف الذكاء الاصطناعي',
+      'confidence': 'الثقة',
+      'unknown_tag': 'تصنيف غير معروف',
+      'user_choice': 'اختيار المستخدم',
 
       // Create Report
       'short_title': 'العنوان المختصر',

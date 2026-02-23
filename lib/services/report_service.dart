@@ -54,6 +54,8 @@ class ReportService {
         location: formattedLocation,
         image: image,
         token: token,
+        aiTag: report.aiTag,
+        confidence: report.confidence,
       );
       print("Response Data: $responseData");
 

@@ -13,12 +13,14 @@ class Report {
   final String description;
   final String incidentType;
   final String location;
-  final double? latitude; // أضفنا هذا
-  final double? longitude; // أضفنا هذا
+  final double? latitude;
+  final double? longitude;
   final DateTime date;
   final ReportStatus status;
   final IconData? icon;
   final Color? iconColor;
+  final String? aiTag;
+  final double? confidence;
 
   Report({
     required this.id,
@@ -32,6 +34,8 @@ class Report {
     this.longitude,
     this.icon,
     this.iconColor,
+    this.aiTag,
+    this.confidence,
   });
 
   // Factory constructor to create a Report from JSON
@@ -52,6 +56,10 @@ class Report {
       status: _parseStatus(json['status'] ?? 'pending'),
       icon: _getIconForType(json['category']),
       iconColor: _getColorForType(json['category']),
+      aiTag: json['aiTag'],
+      confidence: json['confidence'] != null
+          ? (json['confidence'] as num).toDouble()
+          : 0.0,
     );
   }
 

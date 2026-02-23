@@ -9,6 +9,8 @@ class ReportCard extends StatelessWidget {
   final Color incidentIconColor;
   final String incidentType;
   final String date;
+  final String aiTag;
+  final double confidence;
 
   const ReportCard({
     super.key,
@@ -18,6 +20,8 @@ class ReportCard extends StatelessWidget {
     required this.incidentIconColor,
     required this.incidentType,
     required this.date,
+    required this.aiTag,
+    required this.confidence,
   });
 
   Color _getStatusColor() {
@@ -109,13 +113,70 @@ class ReportCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    incidentType,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1a1a1a),
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "incident_type".tr,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1a1a1a),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        incidentType,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Row(
+                  //   children: [
+                  //     Text(
+                  //       "ai_tag".tr,
+                  //       style: const TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.w600,
+                  //         color: Color(0xFF1a1a1a),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(width: 8),
+                  //     Text(
+                  //       aiTag,
+                  //       style: const TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.w600,
+                  //         color: Colors.grey,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        "confidence".tr,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1a1a1a),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "${confidence.toStringAsFixed(0)} %",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Row(

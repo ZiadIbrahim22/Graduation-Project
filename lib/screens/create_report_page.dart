@@ -57,8 +57,9 @@ class _CreateReportPageState extends State<CreateReportPage>
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 50,
-      maxWidth: 1024,
+      imageQuality: 100,
+      maxHeight: 640,
+      maxWidth: 640,
     );
     if (pickedFile != null) {
       setState(() {

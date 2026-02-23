@@ -204,6 +204,8 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                                   incidentType: report.incidentType,
                                   date:
                                       "${report.date.year}/${report.date.month}/${report.date.day}",
+                                  aiTag: report.aiTag ?? "unknown_tag".tr,
+                                  confidence: report.confidence ?? 0.0,
                                 ),
                               );
                             },

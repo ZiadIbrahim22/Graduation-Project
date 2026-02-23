@@ -45,6 +45,8 @@ class ApiService {
     required String location,
     required String token,
     File? image,
+    String? aiTag,
+    double? confidence,
   }) async {
     var request = http.MultipartRequest(
       'POST',
@@ -63,13 +65,17 @@ class ApiService {
     request.fields['Description'] = description;
     request.fields['Category'] = category;
     request.fields['Location'] = location;
-
+    request.fields['aiTag'] = aiTag ?? '';
+    request.fields['confidence'] = confidence?.toString() ?? '';
 
     // Add Image
     if (image != null) {
-      request.files.add(await http.MultipartFile.fromPath(
+      List<int> imageBytes = await image.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
         'Photo',
-        image.path,
+        imageBytes,
+        filename: image.path.split('/').last,
+        contentType:  http.MediaType('image', 'jpeg'),
       ));
     }
 

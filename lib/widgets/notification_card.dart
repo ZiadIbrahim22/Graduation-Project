@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reporting_system/services/localization_service.dart';
+// import 'package:reporting_system/services/localization_service.dart';
 import '../models/notification.dart';
 
 class NotificationCard extends StatelessWidget {
@@ -60,23 +60,23 @@ class NotificationCard extends StatelessWidget {
                         color: Color(0xFF1a1a1a),
                       ),
                     ),
-                    if (!notification.isRead)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2dd4bf), // Teal
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          "unread".tr,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    // if (!notification.isRead)
+                    //   Container(
+                    //     padding: const EdgeInsets.symmetric(
+                    //         horizontal: 8, vertical: 2),
+                    //     decoration: BoxDecoration(
+                    //       color: const Color(0xFF2dd4bf), // Teal
+                    //       borderRadius: BorderRadius.circular(10),
+                    //     ),
+                    //     child: Text(
+                    //       "unread".tr,
+                    //       style: const TextStyle(
+                    //         color: Colors.white,
+                    //         fontSize: 10,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //     ),
+                    //   ),
                   ],
                 ),
                 const SizedBox(height: 4),
