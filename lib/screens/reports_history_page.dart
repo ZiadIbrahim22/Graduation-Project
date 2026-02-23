@@ -205,7 +205,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                                   date:
                                       "${report.date.year}/${report.date.month}/${report.date.day}",
                                   aiTag: report.aiTag ?? "unknown_tag".tr,
-                                  confidence: report.confidence ?? 0.0,
+                                  confidence: report.formattedConfidence ?? "${(report.confidence ?? 0).toStringAsFixed(0)} %",
                                 ),
                               );
                             },

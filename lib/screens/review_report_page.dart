@@ -221,8 +221,10 @@ class _ReviewReportPageState extends State<ReviewReportPage>
       if (!mounted) return;
       Navigator.pop(context); // إخفاء التحميل
 
-      String aiTag = result['aiTag'] ?? '';
-      double realConfidence = (result['confidence'] as num).toDouble();
+      // String aiTag = result['aiTag'] ?? '';
+      // double realConfidence = (result['confidence'] as num).toDouble();
+      String aiTag = result['aiTag']?.toString() ?? 'General';
+      String displayConfidence = result['formattedConfidence']?.toString() ?? "0%";
 
       // 4. الانتقال لصفحة النجاح
       Navigator.pushReplacement(
@@ -231,7 +233,7 @@ class _ReviewReportPageState extends State<ReviewReportPage>
           builder: (context) => ReportSubmittedPage(
             reportId: result['reportId']?.toString() ?? 'N/A', // أو الـ ID اللي راجع من السيرفر
             aiTag: aiTag,
-            confidence: realConfidence * 100,
+            confidenceText: displayConfidence,
           ),
         ),
       );

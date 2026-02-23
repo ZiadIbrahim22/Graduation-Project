@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ApiService {
   // --- Auth (Login) ---
@@ -75,7 +76,7 @@ class ApiService {
         'Photo',
         imageBytes,
         filename: image.path.split('/').last,
-        contentType:  http.MediaType('image', 'jpeg'),
+        contentType:  MediaType('image', 'jpeg'),
       ));
     }
 

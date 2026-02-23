@@ -21,6 +21,7 @@ class Report {
   final Color? iconColor;
   final String? aiTag;
   final double? confidence;
+  final String? formattedConfidence;
 
   Report({
     required this.id,
@@ -36,6 +37,7 @@ class Report {
     this.iconColor,
     this.aiTag,
     this.confidence,
+    this.formattedConfidence,
   });
 
   // Factory constructor to create a Report from JSON
@@ -60,6 +62,7 @@ class Report {
       confidence: json['confidence'] != null
           ? (json['confidence'] as num).toDouble()
           : 0.0,
+      formattedConfidence: json['formattedConfidence']?.toString(),
     );
   }
 

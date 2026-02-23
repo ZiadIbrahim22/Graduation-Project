@@ -10,7 +10,7 @@ class ReportCard extends StatelessWidget {
   final String incidentType;
   final String date;
   final String aiTag;
-  final double confidence;
+  final String confidence;
 
   const ReportCard({
     super.key,
@@ -169,7 +169,7 @@ class ReportCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "${confidence.toStringAsFixed(0)} %",
+                        confidence,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
