@@ -110,90 +110,100 @@ class ReportCard extends StatelessWidget {
                 child: Icon(incidentIcon, color: incidentIconColor, size: 24),
               ),
               const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        "incident_type".tr,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1a1a1a),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "incident_type".tr,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1a1a1a),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        incidentType,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            incidentType,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // Row(
-                  //   children: [
-                  //     Text(
-                  //       "ai_tag".tr,
-                  //       style: const TextStyle(
-                  //         fontSize: 16,
-                  //         fontWeight: FontWeight.w600,
-                  //         color: Color(0xFF1a1a1a),
-                  //       ),
-                  //     ),
-                  //     const SizedBox(width: 8),
-                  //     Text(
-                  //       aiTag,
-                  //       style: const TextStyle(
-                  //         fontSize: 16,
-                  //         fontWeight: FontWeight.w600,
-                  //         color: Colors.grey,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        "confidence".tr,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1a1a1a),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // Row(
+                    //   children: [
+                    //     Text(
+                    //       "ai_tag".tr,
+                    //       style: const TextStyle(
+                    //         fontSize: 16,
+                    //         fontWeight: FontWeight.w600,
+                    //         color: Color(0xFF1a1a1a),
+                    //       ),
+                    //     ),
+                    //     const SizedBox(width: 8),
+                    //     Text(
+                    //       aiTag,
+                    //       style: const TextStyle(
+                    //         fontSize: 16,
+                    //         fontWeight: FontWeight.w600,
+                    //         color: Colors.grey,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    // const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          "confidence".tr,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1a1a1a),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        confidence,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            confidence,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time,
-                          size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        date,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time,
+                            size: 14, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          date,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
