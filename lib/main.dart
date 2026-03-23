@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
             valueListenable: UserService().currentUser,
             builder: (context, user, _) {
               return user == null ? const LoginPage() : const MainScreen();
+              // return const MainScreen();                                 
             },
           ),
           debugShowCheckedModeBanner: false,

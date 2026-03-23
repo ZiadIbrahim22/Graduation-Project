@@ -178,7 +178,7 @@ class ApiService {
   static Future<List<dynamic>> fetchMyReports(String token) async {
     final response = await http.get(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/History'),                             // API for fetch my reports
+          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=10'),                             // API for fetch my reports
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
