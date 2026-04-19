@@ -9,10 +9,16 @@ import 'widgets/bottom_nav_bar.dart';
 import 'services/localization_service.dart';
 import 'services/user_service.dart';
 import 'models/user_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await UserService().loadUser();
   await LocalizationService().loadLocale();
   runApp(const MyApp());

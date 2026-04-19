@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "309824508328",
+    "project_id": "incident-reporting-e3524",
+    "storage_bucket": "incident-reporting-e3524.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309824508328:android:4782610d6d1f5f82bc0d9d",
+        "android_client_info": {
+          "package_name": "com.example.reporting_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqM7belosYtRrf4eeRHfqSDru946nQGlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

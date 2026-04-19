@@ -3,18 +3,29 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+Future<String?> getDeviceToken() async {
+  return await FirebaseMessaging.instance.getToken();
+}
 
 class ApiService {
   // --- Auth (Login) ---
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
+    String? token = await getDeviceToken();
     final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/api/Account/login'),                       // API for login
+      Uri.parse('${ApiConfig.baseUrl}/api/Account/login'), // API for login
       headers: ApiConfig.headers,
-      body: jsonEncode({'emailorPhoneNumber': email, 'password': password}),
+      body: jsonEncode({
+        'emailorPhoneNumber': email,
+        'password': password,
+        'deviceToken': token
+      }),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      print(token);
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to login: ${response.body}');
@@ -26,7 +37,7 @@ class ApiService {
       Map<String, dynamic> userData) async {
     final response = await http.post(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Account/register'),                           // API for register
+          '${ApiConfig.baseUrl}/api/Account/register'), // API for register
       headers: ApiConfig.headers,
       body: jsonEncode(userData),
     );
@@ -52,7 +63,7 @@ class ApiService {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/CreateReport'),                     // API for submit report
+          '${ApiConfig.baseUrl}/api/Reports/CreateReport'), // API for submit report
     );
 
     // Add Token to Header
@@ -76,7 +87,7 @@ class ApiService {
         'Photo',
         imageBytes,
         filename: image.path.split('/').last,
-        contentType:  MediaType('image', 'jpeg'),
+        contentType: MediaType('image', 'jpeg'),
       ));
     }
 
@@ -95,7 +106,8 @@ class ApiService {
   // --- Fetch User Stats ---
   static Future<Map<String, dynamic>> fetchUserStats(String token) async {
     final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/api/User/GetUserStatus'),                                // API for fetch user stats
+      Uri.parse(
+          '${ApiConfig.baseUrl}/api/User/GetUserStatus'), // API for fetch user stats
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -111,7 +123,7 @@ class ApiService {
   static Future<List<dynamic>> fetchNotifications(String token) async {
     final response = await http.get(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Notifications/GetMyNotifications'),                                 // API for fetch notifications
+          '${ApiConfig.baseUrl}/api/Notifications/GetMyNotifications'), // API for fetch notifications
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -178,7 +190,7 @@ class ApiService {
   static Future<List<dynamic>> fetchMyReports(String token) async {
     final response = await http.get(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=10'),                             // API for fetch my reports
+          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=10'), // API for fetch my reports
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -205,7 +217,8 @@ class ApiService {
     required String email,
     required String password,
   }) async {
-    final url = Uri.parse('${ApiConfig.baseUrl}/api/User/ChangeEmail');                  // API for change email
+    final url = Uri.parse(
+        '${ApiConfig.baseUrl}/api/User/ChangeEmail'); // API for change email
 
     final response = await http.put(
       url,
@@ -231,7 +244,7 @@ class ApiService {
       String newPassword, String confirmPassword) async {
     final response = await http.post(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/User/ChangePassword'),                                 // API for change password
+          '${ApiConfig.baseUrl}/api/User/ChangePassword'), // API for change password
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -256,7 +269,7 @@ class ApiService {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/User/UploadPhoto'),                       // API for upload profile image
+          '${ApiConfig.baseUrl}/api/User/UploadPhoto'), // API for upload profile image
     );
 
     request.headers['Authorization'] = 'Bearer $token';
@@ -276,7 +289,8 @@ class ApiService {
       String path = data['photoPath'] ?? "";
       return path.startsWith('http') ? path : '${ApiConfig.baseUrl}$path';
     } else {
-      print("DEBUG: Upload Error: ${response.statusCode} ${response.reasonPhrase} ${response.stream.bytesToString()}");
+      print(
+          "DEBUG: Upload Error: ${response.statusCode} ${response.reasonPhrase} ${response.stream.bytesToString()}");
       throw Exception('Failed to upload image');
     }
   }
@@ -284,7 +298,8 @@ class ApiService {
   // --- Fetch Profile ---
   static Future<Map<String, dynamic>> fetchProfile(String token) async {
     final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/api/User/GetProfile'),                                // API for fetch profile
+      Uri.parse(
+          '${ApiConfig.baseUrl}/api/User/GetProfile'), // API for fetch profile
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',

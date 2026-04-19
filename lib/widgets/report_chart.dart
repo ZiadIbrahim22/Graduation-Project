@@ -73,7 +73,7 @@ class ReportChart extends StatelessWidget {
                       break;
                   }
                   return SideTitleWidget(
-                    axisSide: meta.axisSide,
+                    meta: meta,
                     space: 16.0,
                     child: text,
                   );
