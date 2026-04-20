@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:reporting_system/models/notification.dart';
 import 'package:reporting_system/services/api_service.dart';
 import 'package:reporting_system/services/user_service.dart';
-// import 'package:toastification/toastification.dart';
+import 'package:toastification/toastification.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -46,37 +47,37 @@ class NotificationService {
   }
 
 
-  // void showNewNotificationPopup(BuildContext context, String title, String message) {
-  //   toastification.show(
-  //     context: context,
-  //     type: ToastificationType.info,
-  //     style: ToastificationStyle.flatColored,
-  //     title: Text(
-  //       title,
-  //       style: const TextStyle(fontWeight: FontWeight.bold),
-  //     ),
-  //     description: Text(message),
-  //     alignment: Alignment.topCenter, // بتخليه ينزل من فوق
-  //     autoCloseDuration: const Duration(seconds: 3), // بيختفي لوحده بعد 3 ثواني
-  //     animationDuration: const Duration(milliseconds: 300),
-  //     icon: const Icon(Icons.notifications_active, color: Color(0xFF1e3a8a)), // لون أزرق زي التطبيق بتاعك
-  //     showProgressBar: false,
-  //     margin: const EdgeInsets.only(top: 20, left: 16, right: 16),
-  //     borderRadius: BorderRadius.circular(12),
-  //     boxShadow: highModeShadow, 
-  //   );
-  // }
+  void showNewNotificationPopup(BuildContext context, String title, String message) {
+    toastification.show(
+      context: context,
+      type: ToastificationType.info,
+      style: ToastificationStyle.flatColored,
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      description: Text(message),
+      alignment: Alignment.topCenter, // بتخليه ينزل من فوق
+      autoCloseDuration: const Duration(seconds: 3), // بيختفي لوحده بعد 3 ثواني
+      animationDuration: const Duration(milliseconds: 300),
+      icon: const Icon(Icons.notifications_active, color: Color(0xFF1e3a8a)), // لون أزرق زي التطبيق بتاعك
+      showProgressBar: false,
+      margin: const EdgeInsets.only(top: 20, left: 16, right: 16),
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: highModeShadow, 
+    );
+  }
 
-  // // داخل NotificationService
-  // void handleForegroundMessage(BuildContext context, RemoteMessage message) {
-  //   // بنستخرج البيانات من الرسالة اللي بعتها الباك إند
-  //   String title = message.notification?.title ?? "تنبيه جديد";
-  //   String body = message.notification?.body ?? "";
+  // داخل NotificationService
+  void handleForegroundMessage(BuildContext context, RemoteMessage message) {
+    // بنستخرج البيانات من الرسالة اللي بعتها الباك إند
+    String title = message.notification?.title ?? "تنبيه جديد";
+    String body = message.notification?.body ?? "";
 
-  //   // بننادي على الـ Popup اللي إنت ضفتها
-  //   showNewNotificationPopup(context, title, body);
+    // بننادي على الـ Popup اللي إنت ضفتها
+    showNewNotificationPopup(context, title, body);
 
-  //   // تحديث القائمة فوراً عشان المستخدم لما يفتح صفحة الإشعارات يلاقيها زادت
-  //   fetchNotifications(); 
-  // }
+    // تحديث القائمة فوراً عشان المستخدم لما يفتح صفحة الإشعارات يلاقيها زادت
+    fetchNotifications(); 
+  }
 }

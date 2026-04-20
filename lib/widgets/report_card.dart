@@ -40,7 +40,7 @@ class ReportCard extends StatelessWidget {
       case ReportStatus.pending:
         return "pending".tr;
       case ReportStatus.inProgress:
-        return "in_progress".tr;
+        return "inprogress".tr;
       case ReportStatus.solved:
         return "solved".tr;
     }
