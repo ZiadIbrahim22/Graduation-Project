@@ -90,7 +90,10 @@ class UserService {
   // --- register ---
   Future<bool> register(UserModel user) async {
     try {
-      final response = await ApiService.registerUser(user.toJson());
+      final deviceToken = await ApiService.getDeviceToken();
+      final response = await ApiService.registerUser(
+        user.toJson(deviceToken: deviceToken),
+      );
       String? token = response['token'] ?? response['Token'];
       await saveUser(user, token: token);
       return true;

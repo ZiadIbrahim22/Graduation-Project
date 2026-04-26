@@ -15,19 +15,28 @@ class ReportService {
 
   // --- Fetch Reports ---
   Future<void> fetchReports() async {
+
+    print("Fetching reports...");
     try {
       String? token = await UserService().getValidToken();
+      print('Token loaded: $token');
       if (token == null) {
         throw Exception("Session expired, please login again");
       }
 
       final List<dynamic> data = await ApiService.fetchMyReports(token);
+      print("Reports data: $data");
+      
+      if (data.isEmpty) {
+        return;
+      }
+      List<Report> newReports = data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
+      newReports.sort((a, b) => b.date.compareTo(a.date));
+      _reports.value = newReports;
 
-      _reports.value =
-          data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
     } catch (e) {
       print("Error fetching reports: $e");
-      _reports.value = [];
+      // _reports.value = [];
     }
   }
 

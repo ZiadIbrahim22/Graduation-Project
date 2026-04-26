@@ -19,6 +19,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
 
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   late AnimationController _controller;
   late Animation<double> _fade;
@@ -42,6 +43,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
   void dispose() {
     _controller.dispose();
     _searchController.dispose();
+    _scrollController.dispose(); 
     super.dispose();
   }
 
@@ -107,6 +109,10 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                             setState(() {
                               _selectedFilter = filter;
                             });
+                            _scrollController.animateTo(0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                            );
                           },
                           child: Chip(
                             label: Text(
@@ -181,6 +187,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                             await ReportService().fetchReports();
                           },
                           child: ListView.builder(
+                            controller: _scrollController,
                             padding: const EdgeInsets.all(16),
                             itemCount: filteredReports.length,
                             itemBuilder: (context, index) {

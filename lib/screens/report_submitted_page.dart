@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../services/localization_service.dart';
 import 'report_status_page.dart';
 
@@ -117,13 +116,13 @@ class _ReportSubmittedPageState extends State<ReportSubmittedPage>
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: 0, // Home active
-        onItemTapped: (index) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          // Assuming Home is at index 0 and is the first route in stack (main.dart)
-        },
-      ),
+      // bottomNavigationBar: CustomBottomNavBar(
+      //   selectedIndex: 0, // Home active
+      //   onItemTapped: (index) {
+      //     Navigator.of(context).popUntil((route) => route.isFirst);
+      //     // Assuming Home is at index 0 and is the first route in stack (main.dart)
+      //   },
+      // ),
     );
   }
 }

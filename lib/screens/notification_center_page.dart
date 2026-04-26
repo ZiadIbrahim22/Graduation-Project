@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/notification.dart';
 import '../widgets/notification_card.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../services/localization_service.dart';
 import '../services/notification_service.dart';
 
@@ -175,16 +174,16 @@ class _NotificationCenterPageState extends State<NotificationCenterPage>
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: 2,
-        onItemTapped: (index) {
-          if (index != 2) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else {
-            Navigator.pop(context);
-          }
-        },
-      ),
+      // bottomNavigationBar: CustomBottomNavBar(
+      //   selectedIndex: 2,
+      //   onItemTapped: (index) {
+      //     if (index != 2) {
+      //       Navigator.of(context).popUntil((route) => route.isFirst);
+      //     } else {
+      //       Navigator.pop(context);
+      //     }
+      //   },
+      // ),
     );
   }
 }

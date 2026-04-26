@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:reporting_system/models/user_model.dart';
-// import 'package:reporting_system/services/api_service.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../widgets/custom_button.dart';
 import '../services/localization_service.dart';
 import '../services/user_service.dart';
@@ -165,16 +162,16 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: 2, // Profile is active
-        onItemTapped: (index) {
-          if (index != 2) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else {
-            Navigator.pop(context);
-          }
-        },
-      ),
+      // bottomNavigationBar: CustomBottomNavBar(
+      //   selectedIndex: 2, // Profile is active
+      //   onItemTapped: (index) {
+      //     if (index != 2) {
+      //       Navigator.of(context).popUntil((route) => route.isFirst);
+      //     } else {
+      //       Navigator.pop(context);
+      //     }
+      //   },
+      // ),
     );
   }
 

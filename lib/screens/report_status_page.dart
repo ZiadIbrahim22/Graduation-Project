@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../services/localization_service.dart';
 import '../services/report_service.dart';
 import '../models/report.dart';
@@ -57,10 +56,13 @@ class _ReportStatusPageState extends State<ReportStatusPage>
 
     if (mounted) {
       if (report != null) {
+        final statusIndex = _getStatusIndex(report.status);
+        print("Report status: ${report.status}");
+        print("Status index: $statusIndex");
         setState(() {
           _reportStatus = {
             "reportId": report.id,
-            "statusIndex": _getStatusIndex(report.status),
+            "statusIndex": statusIndex,
             "status": report.status,
           };
           _isLoading = false;
@@ -134,8 +136,7 @@ class _ReportStatusPageState extends State<ReportStatusPage>
                               children: [
                                 Text(
                                   'tracking_id'.tr,
-                                  style: const TextStyle(
-                                      color: Colors.grey, fontSize: 14),
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
@@ -146,31 +147,39 @@ class _ReportStatusPageState extends State<ReportStatusPage>
                                       color: Color(0xFF1e3a8a)),
                                 ),
                                 const SizedBox(height: 20),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: currentStepIndex ==
-                                            _allSteps.length - 1
-                                        ? const Color(0xFF22c55e).withValues(
-                                            alpha: 0.1) // Green bg for valid
-                                        : const Color(0xFFf97316).withValues(
-                                            alpha:
-                                                0.1), // Orange bg for pending
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    currentStepIndex == _allSteps.length - 1
-                                        ? 'resolved'.tr.toUpperCase()
-                                        : 'inprogress'.tr.toUpperCase(),
-                                    style: TextStyle(
-                                      color: currentStepIndex ==
-                                              _allSteps.length - 1
-                                          ? const Color(0xFF22c55e)
-                                          : const Color(0xFFf97316),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                Builder(
+                                  builder: (context) {
+                                    final ReportStatus? currentStatus = _reportStatus?['status'] as ReportStatus?;
+                                    final bool isPending = currentStatus == ReportStatus.pending;
+                                    final bool isResolved = currentStepIndex == _allSteps.length - 1;
+
+                                    final Color statusColor = isPending
+                                        ? Colors.grey
+                                        : isResolved
+                                            ? const Color(0xFF22c55e)
+                                            : const Color(0xFFf97316);
+
+                                    final String statusText = isPending
+                                        ? 'pending'.tr.toUpperCase()
+                                        : isResolved
+                                            ? 'resolved'.tr.toUpperCase()
+                                            : 'inprogress'.tr.toUpperCase();
+
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        statusText,
+                                        style: TextStyle(
+                                          color: statusColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -290,16 +299,16 @@ class _ReportStatusPageState extends State<ReportStatusPage>
                     ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: 1, // Reports active
-        onItemTapped: (index) {
-          if (index != 1) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else {
-            Navigator.pop(context); // Go back to history list
-          }
-        },
-      ),
+      // bottomNavigationBar: CustomBottomNavBar(
+      //   selectedIndex: 1, // Reports active
+      //   onItemTapped: (index) {
+      //     if (index != 1) {
+      //       Navigator.of(context).popUntil((route) => route.isFirst);
+      //     } else {
+      //       Navigator.pop(context); // Go back to history list
+      //     }
+      //   },
+      // ),
     );
   }
 }

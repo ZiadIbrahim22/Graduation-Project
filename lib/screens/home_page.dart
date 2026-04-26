@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:reporting_system/config/api_config.dart';
 import '../widgets/report_chart.dart';
 import 'notification_center_page.dart';
 import 'create_report_page.dart';
@@ -52,14 +51,13 @@ class _HomePageState extends State<HomePage>
 
       final profile = await ApiService.fetchProfile(token);
       final stats = await ApiService.fetchUserStats(token);
+      print("Profile from API: $profile");
       print("Stats from API: $stats");
 
       final currentUser = UserService().currentUser.value;
       if (currentUser != null) {
-        String rawPhoto = stats['photo'] ?? "";
-        String fullImageUrl = (rawPhoto.isNotEmpty && !rawPhoto.startsWith('http'))
-            ? '${ApiConfig.baseUrl}$rawPhoto'
-            : rawPhoto;
+        String rawPhoto = profile['photoUrl'] ?? "";
+        String fullImageUrl = rawPhoto;
 
         final updatedUser = currentUser.copyWith(
           fullName: profile['fullName'] ?? currentUser.fullName,
@@ -75,7 +73,7 @@ class _HomePageState extends State<HomePage>
             "thisMonth": stats['thisMonth'] ?? 0,
             "pending": stats['pendingCount'] ?? 0,
             "inProgress": stats['inProgressCount'] ?? 0,
-            "solved": stats['solvedCount'] ?? 0,
+            "solved": stats['resolvedCount'] ?? 0,
             "notifications": stats['notifications'] ?? 0,
           };
           _isLoading = false;

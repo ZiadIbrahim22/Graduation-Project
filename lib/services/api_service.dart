@@ -5,11 +5,14 @@ import '../config/api_config.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-Future<String?> getDeviceToken() async {
-  return await FirebaseMessaging.instance.getToken();
-}
 
 class ApiService {
+
+  // --- Get Device Token ---
+    static Future<String?> getDeviceToken() async {
+    return await FirebaseMessaging.instance.getToken();
+  }
+  
   // --- Auth (Login) ---
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
@@ -131,6 +134,8 @@ class ApiService {
       },
     );
 
+    print("Notifications status: ${response.statusCode} | body: ${response.body}");
+
     if (response.statusCode == 200) {
       print("Notifications: ${response.body}");
       try {
@@ -190,7 +195,7 @@ class ApiService {
   static Future<List<dynamic>> fetchMyReports(String token) async {
     final response = await http.get(
       Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=10'), // API for fetch my reports
+          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=1000'), // API for fetch my reports
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',

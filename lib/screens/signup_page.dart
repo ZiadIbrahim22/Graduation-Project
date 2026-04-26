@@ -30,6 +30,9 @@ class _SignUpPageState extends State<SignUpPage>
   late Animation<double> _fade;
   late Animation<Offset> _slide;
 
+  // ✅ نحفظ الـ ScaffoldMessenger هنا
+  ScaffoldMessengerState? _messenger;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,12 @@ class _SignUpPageState extends State<SignUpPage>
     _slide = Tween(begin: const Offset(0, .15), end: Offset.zero)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
   }
 
   @override
@@ -53,63 +62,74 @@ class _SignUpPageState extends State<SignUpPage>
   }
 
   Future<void> _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      final newUser = UserModel(
-        fullName: _nameController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-        nationalId: _nationalIdController.text,
-      );
+    setState(() => _isLoading = true);
 
+    final newUser = UserModel(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim(),
+      password: _passwordController.text,
+      confirmPassword: _confirmPasswordController.text,
+      nationalId: _nationalIdController.text.trim(),
+    );
+
+    try {
       // 1. Register
       final success = await UserService().register(newUser);
 
-      if (success) {
-        // 2. Login automatically (optional)
-        final loginSuccess = await UserService().login(
-          newUser.email,
-          newUser.password,
+      if (!success) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        _messenger?.showSnackBar(
+          SnackBar(
+            content: Text('registration_failed'.tr),
+            backgroundColor: Colors.red,
+          ),
         );
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-
-          if (loginSuccess) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('account_created_please_login'.tr)),
-            );
-          }
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('registration_failed'.tr),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        return;
       }
+
+      // 2. Login automatically
+      final loginSuccess = await UserService().login(
+        newUser.email,
+        newUser.password,
+      );
+
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      if (loginSuccess) {
+        // ✅ دخل مباشرة
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else {
+        // ✅ حساب اتعمل بس محتاج يدخل يدوي — نبعت رسالة للـ LoginPage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+            settings: RouteSettings(
+              arguments: 'account_created_please_login'.tr,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      _messenger?.showSnackBar(
+        SnackBar(
+          content: Text('${'error'.tr}: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

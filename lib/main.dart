@@ -114,24 +114,63 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  // مفاتيح مستقلة لكل tab
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+  ];
+
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    // لو دوست على نفس الـ tab، ارجع للـ root بتاعه
+    if (_selectedIndex == index) {
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    } else {
+      _navigatorKeys[_selectedIndex].currentState?.popUntil((route) => route.isFirst);
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  // لما تضغط Back على الموبايل
+  Future<bool> _onWillPop() async {
+    final currentNavigator = _navigatorKeys[_selectedIndex].currentState;
+    if (currentNavigator != null && currentNavigator.canPop()) {
+      currentNavigator.pop();
+      return false; // متخرجش من الأبلكيشن
+    }
+    return true;
+  }
+
+  Widget _buildNavigator(int index, Widget page) {
+    return Navigator(
+      key: _navigatorKeys[index],
+      observers: [],
+      onGenerateRoute: (settings) => MaterialPageRoute(
+        builder: (_) => page,
+        settings: settings,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> widgetOptions = [
-      HomePage(onNavigateToProfile: () => _onItemTapped(2)),
-      const ReportsHistoryPage(),
-      const ProfileSettingsPage(),
-    ];
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: widgetOptions),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildNavigator(0, HomePage(onNavigateToProfile: () => _onItemTapped(2))),
+            _buildNavigator(1, const ReportsHistoryPage()),
+            _buildNavigator(2, const ProfileSettingsPage()),
+          ],
+        ),
+        bottomNavigationBar: CustomBottomNavBar(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../widgets/custom_button.dart';
 import '../services/localization_service.dart';
 import '../services/user_service.dart';
@@ -207,16 +206,6 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        selectedIndex: 2,
-        onItemTapped: (index) {
-          if (index != 2) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          } else {
-            Navigator.pop(context);
-          }
-        },
       ),
     );
   }

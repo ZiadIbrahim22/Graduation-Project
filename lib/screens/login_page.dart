@@ -24,6 +24,9 @@ class _LoginPageState extends State<LoginPage>
   late Animation<double> _fade;
   late Animation<Offset> _slide;
 
+  // ✅ نحفظ الـ ScaffoldMessenger هنا
+  ScaffoldMessengerState? _messenger;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +41,22 @@ class _LoginPageState extends State<LoginPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
+
+    // ✅ استقبال الرسالة من SignUp
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String && args.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _messenger?.showSnackBar(SnackBar(content: Text(args)));
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     _emailController.dispose();
@@ -47,9 +66,7 @@ class _LoginPageState extends State<LoginPage>
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
       final success = await UserService().login(
         _emailController.text,
@@ -57,9 +74,7 @@ class _LoginPageState extends State<LoginPage>
       );
 
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
 
         if (success) {
           Navigator.pushReplacement(
@@ -67,7 +82,7 @@ class _LoginPageState extends State<LoginPage>
             MaterialPageRoute(builder: (context) => const MainScreen()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
+          _messenger?.showSnackBar(
             SnackBar(
               content: Text('invalid_credentials'.tr),
               backgroundColor: Colors.red,
@@ -90,7 +105,6 @@ class _LoginPageState extends State<LoginPage>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Header
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 40),
@@ -135,10 +149,7 @@ class _LoginPageState extends State<LoginPage>
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Login Card
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     padding: const EdgeInsets.all(24),
@@ -167,8 +178,6 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ),
                           const SizedBox(height: 24),
-
-                          // Email Field
                           _buildTextField(
                             controller: _emailController,
                             label: 'email_phone'.tr,
@@ -181,8 +190,6 @@ class _LoginPageState extends State<LoginPage>
                             },
                           ),
                           const SizedBox(height: 16),
-
-                          // Password Field
                           _buildTextField(
                             controller: _passwordController,
                             label: 'password'.tr,
@@ -209,8 +216,6 @@ class _LoginPageState extends State<LoginPage>
                             },
                           ),
                           const SizedBox(height: 24),
-
-                          // Login Button
                           _isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : CustomButton(
@@ -218,8 +223,6 @@ class _LoginPageState extends State<LoginPage>
                                   onPressed: _login,
                                 ),
                           const SizedBox(height: 16),
-
-                          // Create Account Link
                           Center(
                             child: TextButton(
                               onPressed: () {
@@ -244,7 +247,6 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
                 ],
               ),

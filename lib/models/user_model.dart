@@ -52,11 +52,9 @@ class UserModel {
     );
   }
 
-
   // Factory constructor to create a UserModel from JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     String? rawPath = json['profileImage'];
-    // إذا كان المسار ناقصاً، نضيف الـ BaseUrl فوراً عند التحويل من JSON
     String? fullPath = (rawPath != null && rawPath.isNotEmpty && !rawPath.startsWith('http'))
         ? '${ApiConfig.baseUrl}$rawPath'
         : rawPath;
@@ -64,16 +62,17 @@ class UserModel {
     return UserModel(
       fullName: json['fullName'] ?? '',
       email: json['email'] ?? '',
-      phone: json['phoneNumber'] ?? '',
+      phone: json['phoneNumber'] ?? json['phone'] ?? '',
       password: json['password'] ?? '',
       nationalId: json['nationalId'] ?? '',
       confirmPassword: json['confirmPassword'] ?? '',
-      profileImage: fullPath, // هنا هيتخزن الرابط الكامل دائماً
+      profileImage: fullPath,
     );
   }
 
   // Method to convert UserModel to JSON
-  Map<String, dynamic> toJson() {
+  // ✅ deviceToken بقى optional parameter
+  Map<String, dynamic> toJson({String? deviceToken}) {
     return {
       'fullName': fullName,
       'email': email,
@@ -82,7 +81,7 @@ class UserModel {
       'nationalId': nationalId,
       'confirmPassword': confirmPassword,
       'profileImage': profileImage,
+      if (deviceToken != null) 'deviceToken': deviceToken,
     };
   }
-  
 }
