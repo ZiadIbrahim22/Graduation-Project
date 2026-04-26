@@ -19,6 +19,7 @@ class _ReviewReportPageState extends State<ReviewReportPage>
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<Offset> _slide;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -159,13 +160,12 @@ class _ReviewReportPageState extends State<ReviewReportPage>
                 ),
                 const SizedBox(height: 30),
                 CustomButton(
-                  text: "Confirm_&_Send_Report_Now".tr,
-                  onPressed: () {
-                    _sendReportToApi();
-                  },
-                  backgroundColor: const Color(0xFFdc2626), // Red
-                  icon: Icons
-                      .electric_bolt_rounded, // Or checkmark icon inside button
+                  text: _isSubmitting
+                      ? "sending".tr
+                      : "Confirm_&_Send_Report_Now".tr,
+                  onPressed: _isSubmitting ? null : _sendReportToApi, 
+                  backgroundColor: const Color(0xFFdc2626), 
+                  icon: _isSubmitting ? null : Icons.electric_bolt_rounded, 
                 ),
                 const SizedBox(height: 16),
                 CustomButton(
@@ -186,86 +186,65 @@ class _ReviewReportPageState extends State<ReviewReportPage>
   }
 
 
-  Future<void> _sendReportToApi() async {
-    try {
-      // 1. إظهار مؤشر التحميل
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
+  // أضف في الـ State
 
-      // 2. تجهيز موديل التقرير (حسب ما ReportService بيحتاج)
-      // ملاحظة: الـ Location في الـ API بتاعك لازم يتبعت بصيغة "lat,lng"
-      String locationString = "${widget.reportData['lat']},${widget.reportData['lng']}";
 
-      final newReport = Report(
-        id: '', 
-        title: widget.reportData['title'],
-        description: widget.reportData['description'],
-        incidentType: widget.reportData['category'],
-        location: locationString, // الصيغة اللي السيرفر طالبها
-        date: DateTime.now(),
-        status: ReportStatus.pending,
-      );
+Future<void> _sendReportToApi() async {
+  setState(() => _isSubmitting = true);  // ← بدل showDialog
 
-      // 3. نداء خدمة الرفع
-      // تأكد إن ReportService بيستخدم اسم الحقل "Photo" زي ما مكتوب في الـ JSON
-      final result = await ReportService().addReport(
-        newReport,
-        widget.reportData['image'], // ملف الصورة
-        lat: widget.reportData['lat'],
-        lng: widget.reportData['lng'],
-      );
+  try {
+    String locationString = "${widget.reportData['lat']},${widget.reportData['lng']}";
 
-      if (!mounted) return;
-      Navigator.pop(context); // إخفاء التحميل
+    final newReport = Report(
+      id: '',
+      title: widget.reportData['title'],
+      description: widget.reportData['description'],
+      incidentType: widget.reportData['category'],
+      location: locationString,
+      date: DateTime.now(),
+      status: ReportStatus.pending,
+    );
 
-      // String aiTag = result['aiTag'] ?? '';
-      // double realConfidence = (result['confidence'] as num).toDouble();
-      String aiTag = result['aiTag']?.toString() ?? 'General';
-      String displayConfidence = result['formattedConfidence']?.toString() ?? "0%";
+    final result = await ReportService().addReport(
+      newReport,
+      widget.reportData['image'],
+      lat: widget.reportData['lat'],
+      lng: widget.reportData['lng'],
+    );
 
-      // 4. الانتقال لصفحة النجاح
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ReportSubmittedPage(
-            reportId: result['reportId']?.toString() ?? 'N/A', // أو الـ ID اللي راجع من السيرفر
-            aiTag: aiTag,
-            confidenceText: displayConfidence,
-          ),
+    if (!mounted) return;
+
+    String aiTag = result['aiTag']?.toString() ?? 'General';
+    String displayConfidence = result['formattedConfidence']?.toString() ?? "0%";
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportSubmittedPage(
+          reportId: result['reportId']?.toString() ?? 'N/A',
+          aiTag: aiTag,
+          confidenceText: displayConfidence,
         ),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("report_submitted_success".tr),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);  // ← بدل Navigator.pop
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 10),
+            Text('Error: ${e.toString()}'),
+          ],
         ),
-      );
-
-    } catch (e) {
-      if (!mounted) return;
-      if(mounted){
-        Navigator.pop(context); // إخفاء التحميل
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white), // أيقونة خطأ
-                const SizedBox(width: 10),
-                Text('Error: ${e.toString()}'), // الرسالة
-              ],
-            ),
-            backgroundColor: Colors.red, // لون الخلفية أحمر للخطأ
-            behavior: SnackBarBehavior.floating, // يخلي الإشعار طاير مش لازق تحت
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: const Duration(seconds: 3), // يختفي بعد 3 ثواني
-          ),
-        );
-      }
-    }
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
+}
 }
