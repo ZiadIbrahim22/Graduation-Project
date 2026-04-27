@@ -6,7 +6,6 @@ import 'package:reporting_system/config/api_config.dart';
 import 'package:reporting_system/services/api_service.dart';
 import 'change_email_page.dart';
 import 'change_password_page.dart';
-import 'login_page.dart';
 import '../services/localization_service.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
@@ -47,6 +46,8 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
       if (token == null) return;
 
       final data = await ApiService.fetchProfile(token);
+      
+      if (!mounted) return;
 
       final currentUser = UserService().currentUser.value;
       if (currentUser != null) {
@@ -70,7 +71,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
   Future<File> _compressImage(File file) async {
     final compressedBytes = await FlutterImageCompress.compressWithFile(
       file.path,
-      quality: 70,
+      quality: 60,
     );
 
     final compressedFile = File(file.path)..writeAsBytesSync(compressedBytes!);
@@ -141,7 +142,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                       ValueListenableBuilder<UserModel?>(
                         valueListenable: UserService().currentUser,
                         builder: (context, user, child) {
-                          String? imageUrl = user?.profileImage;
+                          // 🚫 حماية ضد الـ Null Crash
+                          if (user == null) return const SizedBox.shrink();
+                          String? imageUrl = user.profileImage;
 
                           return Stack(
                             alignment: Alignment.center,
@@ -200,10 +203,11 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                 ValueListenableBuilder<UserModel?>(
                   valueListenable: UserService().currentUser,
                   builder: (context, user, _) {
+                    if (user == null) return const SizedBox.shrink();
                     return Column(
                       children: [
                         Text(
-                          user?.fullName ?? 'user'.tr,
+                          user.fullName,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -212,7 +216,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          user?.email ?? 'email'.tr,
+                          user.email,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -249,14 +253,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                           onPressed: () => _showConfirmationDialog(
                             title: 'logout_confirm_title'.tr,
                             message: 'logout_confirm_msg'.tr,
-                            onConfirm: () {
-                              UserService().logout();
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (context) => const LoginPage()),
-                                (route) => false,
-                              );
-                            },
+                            onConfirm: () async {await UserService().logout();},
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
@@ -291,7 +288,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
   void _showConfirmationDialog({
     required String title,
     required String message,
-    required VoidCallback onConfirm,
+    required Future<void> Function() onConfirm,
   }) {
     showDialog(
       context: context,
@@ -304,9 +301,9 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
             child: Text('cancel'.tr),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
+            onPressed: () async{
+               Navigator.pop(context);
+             await onConfirm();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFdc2626),

@@ -92,8 +92,8 @@ class MyApp extends StatelessWidget {
             home: ValueListenableBuilder<UserModel?>(
               valueListenable: UserService().currentUser,
               builder: (context, user, _) {
-                return user == null ? const LoginPage() : const MainScreen();
-                // return const MainScreen();                                 
+                if (user == null) return const LoginPage();
+                return const MainScreen(key: ValueKey('main_screen'));
               },
             ),
             debugShowCheckedModeBanner: false,

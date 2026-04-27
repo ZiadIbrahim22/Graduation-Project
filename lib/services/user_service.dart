@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:reporting_system/main.dart';
 import 'package:reporting_system/models/user_model.dart';
+import 'package:reporting_system/screens/login_page.dart';
 import 'package:reporting_system/services/api_service.dart';
+import 'package:reporting_system/services/report_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
@@ -26,23 +29,27 @@ class UserService {
     return _authToken;
   }
   String? get authToken => _authToken;
+  bool _isLoggingOut = false;
 
-  bool get isLoggedIn => currentUser.value != null;
-
-  // Save User
+  // --- Save User ---
   Future<void> saveUser(UserModel user, {String? token}) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_data', jsonEncode(user.toJson()));
+    if (_isLoggingOut) return;
+    if (currentUser.value == null && token == null) return;
 
+    final prefs = await SharedPreferences.getInstance();
+    
+    if (_isLoggingOut) return;
+    if (currentUser.value == null && token == null) return;
+
+    await prefs.setString('user_data', jsonEncode(user.toJson()));
     if (token != null) {
       await prefs.setString('auth_token', token);
       _authToken = token;
     }
-
     currentUser.value = user;
   }
 
-  // Load User
+  // --- Load User ---
   Future<void> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
@@ -54,13 +61,21 @@ class UserService {
     }
   }
 
-  // Logout
+  // --- Logout ---
   Future<void> logout() async {
+    _isLoggingOut = true;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_data');
     await prefs.remove('auth_token');
     _authToken = null;
     currentUser.value = null;
+    ReportService().clearData();
+    _isLoggingOut = false;
+    // ✅ Force navigate للـ LoginPage
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
   }
 
   // --- Login ---

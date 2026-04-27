@@ -11,11 +11,10 @@ class ReportService {
 
   // Observable list of reports
   final ValueNotifier<List<Report>> _reports = ValueNotifier([]);
-  ValueNotifier<List<Report>> get reports => _reports; 
+  ValueNotifier<List<Report>> get reports => _reports;
 
   // --- Fetch Reports ---
   Future<void> fetchReports() async {
-
     print("Fetching reports...");
     try {
       String? token = await UserService().getValidToken();
@@ -26,24 +25,21 @@ class ReportService {
 
       final List<dynamic> data = await ApiService.fetchMyReports(token);
       print("Reports data: $data");
-      
-      if (data.isEmpty) {
-        return;
-      }
-      List<Report> newReports = data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
+
+      List<Report> newReports =
+          data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
       newReports.sort((a, b) => b.date.compareTo(a.date));
       _reports.value = newReports;
-
     } catch (e) {
       print("Error fetching reports: $e");
-      // _reports.value = [];
+      _reports.value = [];
     }
   }
 
   // --- Add Report ---
-  Future<Map<String, dynamic>> addReport(Report report, File? image, {double? lat, double? lng}) async {
+  Future<Map<String, dynamic>> addReport(Report report, File? image,
+      {double? lat, double? lng}) async {
     try {
-
       print("Adding report...");
       String? token = await UserService().getValidToken();
       if (token == null) {
@@ -51,9 +47,8 @@ class ReportService {
       }
       print('Token loaded: $token');
 
-      String formattedLocation = (lat != null && lng != null) 
-        ? "$lat,$lng" 
-        : report.location;
+      String formattedLocation =
+          (lat != null && lng != null) ? "$lat,$lng" : report.location;
       print("Formatted Location: $formattedLocation");
 
       final Map<String, dynamic> responseData = await ApiService.submitReport(
@@ -86,8 +81,9 @@ class ReportService {
       return null;
     }
   }
+
   // --- Clear Data ---
-  void clearData() {
-    _reports.value = []; 
+  Future<void> clearData() async {
+    _reports.value = [];
   }
 }
