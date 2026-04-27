@@ -100,7 +100,7 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to upload image")),
+          SnackBar(content: Text("Failed to upload image".tr)),
         );
       }
     } finally {

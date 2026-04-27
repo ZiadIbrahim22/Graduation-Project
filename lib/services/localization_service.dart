@@ -41,7 +41,6 @@ class LocalizationService {
       'report_summary': 'My Report Summary',
       'all_time': 'All Time',
       'this_month': 'this month',
-
       // Report Status
       'report_status': 'Report Status',
       'tracking_id': 'Tracking ID',
@@ -210,6 +209,10 @@ class LocalizationService {
       'already_have_account': 'Already have an account?',
       'login_here': 'Login here',
       'or': 'or',
+
+      // Validation
+      'invalid_phone': 'Invalid phone number',
+      'invalid_national_id': 'Invalid national ID',
 
       // Dialogs
       'logout_confirm_title': 'Log Out',
@@ -409,7 +412,7 @@ class LocalizationService {
       'create_new_account': 'إنشاء حساب جديد',
       'report_as_guest': 'الإبلاغ كزائر',
       'smart_incident_system': 'نظام البلاغات الذكي',
-      'password_min_length': 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+      'password_min_length': 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
       'passwords_not_match': 'كلمات المرور غير متطابقة',
       'invalid_credentials':
           'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة',
@@ -420,6 +423,8 @@ class LocalizationService {
       'already_have_account': 'هل لديك حساب بالفعل؟',
       'login_here': 'تسجيل الدخول هنا',
       'or': 'أو',
+      'invalid_phone': 'رقم هاتف غير صحيح',
+      'invalid_national_id': 'رقم قومي غير صحيح',
 
       // Dialogs
       'logout_confirm_title': 'تسجيل الخروج',

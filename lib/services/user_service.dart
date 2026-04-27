@@ -5,6 +5,7 @@ import 'package:reporting_system/main.dart';
 import 'package:reporting_system/models/user_model.dart';
 import 'package:reporting_system/screens/login_page.dart';
 import 'package:reporting_system/services/api_service.dart';
+import 'package:reporting_system/services/notification_service.dart';
 import 'package:reporting_system/services/report_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -70,6 +71,7 @@ class UserService {
     _authToken = null;
     currentUser.value = null;
     ReportService().clearData();
+    NotificationService().clear();
     _isLoggingOut = false;
     // ✅ Force navigate للـ LoginPage
     navigatorKey.currentState?.pushAndRemoveUntil(
@@ -103,42 +105,28 @@ class UserService {
   }
 
   // --- register ---
-  Future<bool> register(UserModel user) async {
+  // user_service.dart — register بيبعت الباسورد منفصل
+  Future<bool> register(UserModel user, String password, String confirmPassword) async {
     try {
       final deviceToken = await ApiService.getDeviceToken();
-      final response = await ApiService.registerUser(
-        user.toJson(deviceToken: deviceToken),
-      );
+      
+      final payload = {
+        ...user.toJson(deviceToken: deviceToken),
+        'password': password,          // ✅ بتتبعت للـ API بس
+        'confirmPassword': confirmPassword,
+      };
+      
+      final response = await ApiService.registerUser(payload);
       String? token = response['token'] ?? response['Token'];
-      await saveUser(user, token: token);
+      await saveUser(user, token: token); // UserModel محفوظ بدون باسورد ✅
       return true;
+  
     } catch (e) {
       print("Register Error: $e");
       return false;
     }
   }
 
-  // --- delete user ---
-  // Future<bool> deleteUser({required String password, String? reason}) async {
-  //   try {
-  //     if (_authToken == null) return false;
-
-  //     await ApiService.deleteAccount(
-  //       token: _authToken!,
-  //       password: password,
-  //       confirmDelete: true,
-  //       reason: reason,
-  //     );
-
-  //     currentUser.value = null;
-  //     _authToken = null;
-
-  //     return true;
-  //   } catch (e) {
-  //     print("Delete User Error: $e");
-  //     return false;
-  //   }
-  // }
 
   // Helpers
   String get userName => currentUser.value?.fullName ?? 'Guest';

@@ -44,13 +44,21 @@ class _HomePageState extends State<HomePage>
     _controller.forward();
   }
 
-  void loadHomeData() async {
+  Future<void> loadHomeData() async {
     try {
       final token = UserService().authToken;
       if (token == null) return;
 
-      final profile = await ApiService.fetchProfile(token);
-      final stats = await ApiService.fetchUserStats(token);
+      final results = await Future.wait([
+        ApiService.fetchProfile(token),
+        ApiService.fetchUserStats(token),
+      ]);
+
+      final profile = results[0];
+      final stats = results[1];
+
+      if (!mounted) return;
+
       print("Profile from API: $profile");
       print("Stats from API: $stats");
 
@@ -106,7 +114,7 @@ class _HomePageState extends State<HomePage>
             child: SafeArea(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  loadHomeData(); 
+                  await loadHomeData(); 
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),

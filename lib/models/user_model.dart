@@ -4,8 +4,6 @@ class UserModel {
   final String fullName;
   final String email;
   final String phone;
-  final String password;
-  final String confirmPassword;
   final String nationalId;
   final String? profileImage;
   final String? name;
@@ -16,9 +14,7 @@ class UserModel {
     required this.fullName,
     required this.email,
     required this.phone,
-    required this.password,
     required this.nationalId,
-    required this.confirmPassword,
     this.profileImage,
     this.name,
     this.totalReports,
@@ -30,9 +26,7 @@ class UserModel {
     String? fullName,
     String? email,
     String? phone,
-    String? password,
     String? nationalId,
-    String? confirmPassword,
     String? profileImage,
     String? name,
     int? totalReports,
@@ -42,9 +36,7 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      password: password ?? this.password,
       nationalId: nationalId ?? this.nationalId,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
       profileImage: profileImage ?? this.profileImage,
       name: name ?? this.name,
       totalReports: totalReports ?? this.totalReports,
@@ -63,25 +55,43 @@ class UserModel {
       fullName: json['fullName'] ?? '',
       email: json['email'] ?? '',
       phone: json['phoneNumber'] ?? json['phone'] ?? '',
-      password: json['password'] ?? '',
       nationalId: json['nationalId'] ?? '',
-      confirmPassword: json['confirmPassword'] ?? '',
       profileImage: fullPath,
     );
   }
 
   // Method to convert UserModel to JSON
   // ✅ deviceToken بقى optional parameter
+  
   Map<String, dynamic> toJson({String? deviceToken}) {
     return {
       'fullName': fullName,
       'email': email,
       'phoneNumber': phone,
-      'password': password,
       'nationalId': nationalId,
-      'confirmPassword': confirmPassword,
       'profileImage': profileImage,
       if (deviceToken != null) 'deviceToken': deviceToken,
     };
   }
+
+  // UserService.dart — register بيبعت الباسورد منفصل
+  // Future<bool> register(UserModel user, String password, String confirmPassword) async {
+  //   try {
+  //     final deviceToken = await ApiService.getDeviceToken();
+      
+  //     final payload = {
+  //       ...user.toJson(deviceToken: deviceToken),
+  //       'password': password,          // ✅ بتتبعت للـ API بس
+  //       'confirmPassword': confirmPassword,
+  //     };
+      
+  //     final response = await ApiService.registerUser(payload);
+  //     String? token = response['token'] ?? response['Token'];
+  //     await UserService().saveUser(user, token: token); // UserModel محفوظ بدون باسورد ✅
+  //     return true;
+  //   } catch (e) {
+  //     print("Register Error: $e");
+  //     return false;
+  //   }
+  // }
 }

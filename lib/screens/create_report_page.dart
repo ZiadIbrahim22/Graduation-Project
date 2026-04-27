@@ -57,7 +57,7 @@ class _CreateReportPageState extends State<CreateReportPage>
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 100,
+      imageQuality: 70,
       maxHeight: 640,
       maxWidth: 640,
     );
@@ -240,64 +240,6 @@ class _CreateReportPageState extends State<CreateReportPage>
     );
   }
 
-  // Future<void> submitReport() async {
-  //   if (_image == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text("Please_attach_an_image".tr)),
-  //     );
-  //     return;
-  //   }
-
-  //   try {
-  //     // Show loading indicator
-  //     showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (context) => const Center(child: CircularProgressIndicator()),
-  //     );
-
-  //     // Add report to service
-  //     final newReport = Report(
-  //       id: '',
-  //       title: _titleController.text,
-  //       description: _descriptionController.text,
-  //       incidentType: _selectedCategory!,
-  //       location: _locationController.text,
-  //       date: DateTime.now(),
-  //       status: ReportStatus.pending,
-  //       icon: _getCategoryIcon(_selectedCategory!),
-  //       iconColor: _getCategoryColor(_selectedCategory!),
-  //     );
-
-  //     final report = await ReportService().addReport(
-  //       newReport,
-  //       _image!,
-  //       lat: _lat,
-  //       lng: _lng,
-  //     );
-
-  //     if (!mounted) return;
-  //     // Hide loading
-  //     Navigator.pop(context);
-
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => ReviewReportPage(
-  //           reportData: report,
-  //         ),
-  //       ),
-  //     );
-  //   } catch (e) {
-  //     // Hide loading if error
-  //     Navigator.pop(context);
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text(e.toString())),
-  //     );
-  //   }
-  // }
-
-  
 
   void submitReport() {
     if (_image == null) {

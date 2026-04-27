@@ -51,8 +51,13 @@ class _ReportStatusPageState extends State<ReportStatusPage>
   }
 
   Future<void> _fetchStatus() async {
-    await ReportService().fetchReports();
-    final report = ReportService().getReportById(widget.reportId);
+    // Check if report is available in cache first
+    Report? report = ReportService().getReportById(widget.reportId);
+    // If not found in cache, fetch from API
+    if (report == null) {
+      await ReportService().fetchReports();
+      report = ReportService().getReportById(widget.reportId);
+    }
 
     if (mounted) {
       if (report != null) {
@@ -61,7 +66,7 @@ class _ReportStatusPageState extends State<ReportStatusPage>
         print("Status index: $statusIndex");
         setState(() {
           _reportStatus = {
-            "reportId": report.id,
+            "reportId": report!.id,
             "statusIndex": statusIndex,
             "status": report.status,
           };

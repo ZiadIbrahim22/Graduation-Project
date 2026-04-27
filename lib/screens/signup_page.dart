@@ -58,6 +58,7 @@ class _SignUpPageState extends State<SignUpPage>
     _nationalIdController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -66,23 +67,24 @@ class _SignUpPageState extends State<SignUpPage>
 
     setState(() => _isLoading = true);
 
+    // ✅ UserModel بدون password خالص
     final newUser = UserModel(
       fullName: _nameController.text.trim(),
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
-      password: _passwordController.text,
-      confirmPassword: _confirmPasswordController.text,
       nationalId: _nationalIdController.text.trim(),
     );
 
+    // ✅ الباسورد محفوظة في variables مؤقتة بس
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
     try {
-      // 1. Register
-      final success = await UserService().register(newUser);
+      // 1. Register — الباسورد بتتبعت منفصلة
+      final success = await UserService().register(newUser, password, confirmPassword);
 
       if (!success) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+        if (mounted) setState(() => _isLoading = false);
         _messenger?.showSnackBar(
           SnackBar(
             content: Text('registration_failed'.tr),
@@ -92,24 +94,21 @@ class _SignUpPageState extends State<SignUpPage>
         return;
       }
 
-      // 2. Login automatically
+      // 2. Login automatically — بنستخدم المتغير المؤقت مش newUser.password
       final loginSuccess = await UserService().login(
         newUser.email,
-        newUser.password,
+        password, // ✅ من المتغير المؤقت
       );
 
       if (!mounted) return;
-
       setState(() => _isLoading = false);
 
       if (loginSuccess) {
-        // ✅ دخل مباشرة
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
-        // ✅ حساب اتعمل بس محتاج يدخل يدوي — نبعت رسالة للـ LoginPage
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -121,9 +120,7 @@ class _SignUpPageState extends State<SignUpPage>
         );
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
       _messenger?.showSnackBar(
         SnackBar(
           content: Text('${'error'.tr}: $e'),
@@ -265,9 +262,9 @@ class _SignUpPageState extends State<SignUpPage>
                             label: 'phone'.tr,
                             icon: Icons.phone_outlined,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'field_required'.tr;
-                              }
+                              if (value == null || value.isEmpty) return 'field_required'.tr;
+                              final phoneRegex = RegExp(r'^01[0125][0-9]{8}$');
+                              if (!phoneRegex.hasMatch(value)) return 'invalid_phone'.tr; 
                               return null;
                             },
                           ),
@@ -279,9 +276,9 @@ class _SignUpPageState extends State<SignUpPage>
                             label: 'national_id'.tr,
                             icon: Icons.badge_outlined,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'field_required'.tr;
-                              }
+                              if (value == null || value.isEmpty) return 'field_required'.tr;
+                              final idRegex = RegExp(r'^[23]\d{13}$');
+                              if (!idRegex.hasMatch(value)) return 'invalid_national_id'.tr;
                               return null;
                             },
                           ),
@@ -310,7 +307,7 @@ class _SignUpPageState extends State<SignUpPage>
                               if (value == null || value.isEmpty) {
                                 return 'field_required'.tr;
                               }
-                              if (value.length < 6) {
+                              if (value.length < 8) {
                                 return 'password_min_length'.tr;
                               }
                               return null;

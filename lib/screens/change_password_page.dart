@@ -32,7 +32,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
   void initState() {
     super.initState();
     final user = UserService().currentUser.value;
-    _currentPasswordController.text = user?.password ?? '';
+    // _currentPasswordController.text = user?.password ?? '';
+    _currentPasswordController.text = '';
 
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 600));

@@ -76,12 +76,12 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Email updated successfully".tr)),
+              SnackBar(content: Text("email_updated_successfully".tr)),
             );
             Navigator.pop(context);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to update email".tr)),
+              SnackBar(content: Text("failed_to_update_email".tr)),
             );
           }
         }
@@ -162,16 +162,6 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
           ),
         ),
       ),
-      // bottomNavigationBar: CustomBottomNavBar(
-      //   selectedIndex: 2, // Profile is active
-      //   onItemTapped: (index) {
-      //     if (index != 2) {
-      //       Navigator.of(context).popUntil((route) => route.isFirst);
-      //     } else {
-      //       Navigator.pop(context);
-      //     }
-      //   },
-      // ),
     );
   }
 

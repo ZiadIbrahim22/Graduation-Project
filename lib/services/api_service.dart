@@ -46,6 +46,8 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      // ✅ الـ register API مش بيرجع body — نرجع map فاضية
+    if (response.body.isEmpty) return {};
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to register: ${response.body}');
