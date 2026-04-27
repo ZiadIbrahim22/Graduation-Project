@@ -83,6 +83,9 @@ class LocalizationService {
       'Please_select_a_category': 'Please select a category',
       'Please_attach_an_image': 'Please attach an image',
       'This_field_is_required': 'This field is required',
+      'Please_add_details_for_other_category': 'Please add details for other category',
+      'Please_enter_a_title_with_at_least_3_characters': 'Please enter a title with at least 3 characters',
+      'Please_enter_a_description_with_at_least_10_characters': 'Please enter a description with at least 10 characters',
 
       // Map Picker
       'select_location': 'Pick Location',
@@ -90,6 +93,18 @@ class LocalizationService {
       'loading_address': 'Loading address...',
       'unknown_location': 'Unknown location',
       'error_fetching_address': 'Error fetching address',
+      'tap_to_select_location_on_map':
+          'Tap to select location on map',
+      'select_location_on_map':
+          'Select location on map',
+      'error_loading_map': 'Error loading map',
+      'tap_to_pinpoint_location': 'Tap to pinpoint location',
+      'Location_pin_dropped': 'Location pin dropped',
+      'my_location': 'My Location',
+      'search_hint': 'Search for address or place...',
+      'searching': 'Searching...',
+      'selected_location': 'Selected Location',
+      'pick_your_location': 'Pick Your Location',
 
       // Review Report
       'review_report': 'Review Your Report',
@@ -209,6 +224,10 @@ class LocalizationService {
       'already_have_account': 'Already have an account?',
       'login_here': 'Login here',
       'or': 'or',
+      'crop_image': 'Crop Image',
+      'done': 'Done',
+      'Updated_successfully': 'Updated successfully',
+      'Image_cropped_successfully': 'Image cropped successfully',
 
       // Validation
       'invalid_phone': 'Invalid phone number',
@@ -297,6 +316,9 @@ class LocalizationService {
       'Please_select_a_category': 'يرجى تحديد نوع البلاغ',
       'Please_attach_an_image': 'يرجى إرفاق صورة',
       'This_field_is_required': 'هذا الحقل مطلوب',
+      'Please_add_details_for_other_category': 'يرجى إضافة تفاصيل للفئة الأخرى',
+      'Please_enter_a_title_with_at_least_3_characters': 'يرجى إدخال عنوان لا يقل عن 3 أحرف',
+      'Please_enter_a_description_with_at_least_10_characters': 'يرجى إدخال وصف لا يقل عن 10 أحرف',
 
       // Map Picker
       'select_location': 'تحديد الموقع',
@@ -304,6 +326,18 @@ class LocalizationService {
       'loading_address': 'جاري تحميل العنوان...',
       'unknown_location': 'موقع غير معروف',
       'error_fetching_address': 'خطأ في جلب العنوان',
+      'tap_to_select_location_on_map':
+          'اضغط لتحديد الموقع على الخريطة',
+      'select_location_on_map':
+          'اختر الموقع على الخريطة',
+      'error_loading_map': 'خطأ في تحميل الخريطة',
+      'tap_to_pinpoint_location': 'اضغط لتحديد الموقع بدقة',
+      'Location_pin_dropped': 'تم تحديد موقع الدبوس',
+      'my_location': 'موقعي الحالي',
+      'search_hint': 'ابحث عن عنوان أو مكان…',
+      'searching': 'جاري البحث…',
+      'selected_location': 'الموقع المحدد',
+      'pick_your_location': 'اختر موقعك',
 
       // Review Report
       'review_report': 'مراجعة البلاغ',
@@ -425,6 +459,10 @@ class LocalizationService {
       'or': 'أو',
       'invalid_phone': 'رقم هاتف غير صحيح',
       'invalid_national_id': 'رقم قومي غير صحيح',
+      'crop_image': 'تعديل الصورة',
+      'done': 'تم',
+      'Updated_successfully': 'تم التحديث',
+      'Image_cropped_successfully': 'تم تعديل الصورة بنجاح',
 
       // Dialogs
       'logout_confirm_title': 'تسجيل الخروج',

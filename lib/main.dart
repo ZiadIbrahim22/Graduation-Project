@@ -115,11 +115,35 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   // مفاتيح مستقلة لكل tab
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+  List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ استمع لتغيير اللغة وأعد بناء الـ Navigators
+    LocalizationService.currentLocale.addListener(_onLocaleChanged);
+  }
+
+  @override
+  void dispose() {
+    LocalizationService.currentLocale.removeListener(_onLocaleChanged);
+    super.dispose();
+  }
+
+  void _onLocaleChanged() {
+    setState(() {
+      // ✅ GlobalKeys جديدة = الصفحات الجوه بتتبنى من أول وجديد بالترجمة الجديدة
+      _navigatorKeys = [
+        GlobalKey<NavigatorState>(),
+        GlobalKey<NavigatorState>(),
+        GlobalKey<NavigatorState>(),
+      ];
+    });
+  }
 
   void _onItemTapped(int index) {
     // لو دوست على نفس الـ tab، ارجع للـ root بتاعه

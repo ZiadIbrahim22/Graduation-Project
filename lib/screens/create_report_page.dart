@@ -22,7 +22,7 @@ class _CreateReportPageState extends State<CreateReportPage>
   // Controllers
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController(text: "pick_your_location".tr);
 
   double? _lat;
   double? _lng;
@@ -160,8 +160,8 @@ class _CreateReportPageState extends State<CreateReportPage>
                     child: GestureDetector(
                       onTap: _pickImage,
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
                           color: const Color(0xFF1e3a8a).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
@@ -259,6 +259,18 @@ class _CreateReportPageState extends State<CreateReportPage>
     if (_lat == null || _lng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please_select_location_on_map".tr)),
+      );
+      return;
+    }
+    if (_titleController.text.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please_enter_a_title_with_at_least_3_characters".tr)),
+      );
+      return;
+    }
+    if (_descriptionController.text.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please_enter_a_description_with_at_least_10_characters".tr)),
       );
       return;
     }

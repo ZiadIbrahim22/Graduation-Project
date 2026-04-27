@@ -9,6 +9,9 @@ import 'change_password_page.dart';
 import '../services/localization_service.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
+import 'package:path_provider/path_provider.dart';
+import 'crop_screen.dart';
+import 'dart:typed_data';
 
 class ProfileSettingsPage extends StatefulWidget {
   const ProfileSettingsPage({super.key});
@@ -85,30 +88,40 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
 
     if (pickedFile == null) return;
 
-    setState(() {
-      _isUploadingImage = true;
-    });
+    // ✅ اقرأ الصورة كـ bytes وافتح شاشة الـ crop
+    final imageBytes = await pickedFile.readAsBytes();
+
+    final Uint8List? croppedBytes = await Navigator.push<Uint8List>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CropScreen(imageBytes: imageBytes),
+      ),
+    );
+
+    // لو اليوزر ضغط X أو رجع بدون crop
+    if (croppedBytes == null) return;
+
+    setState(() => _isUploadingImage = true);
 
     try {
-      File file = File(pickedFile.path);
-      file = await _compressImage(file);
-      setState(() {
-        _image = file;
-      });
+      // احفظ الـ bytes في ملف مؤقت
+      final tempDir = await getTemporaryDirectory();
+      File file = await File('${tempDir.path}/cropped_avatar.jpg')
+          .writeAsBytes(croppedBytes);
 
+      // compress بعد الـ crop
+      file = await _compressImage(file);
+
+      setState(() => _image = file);
       await UserService().updateProfileImage(file);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to upload image".tr)),
+          SnackBar(content: Text("upload_image_failed".tr)),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isUploadingImage = false;
-        });
-      }
+      if (mounted) setState(() => _isUploadingImage = false);
     }
   }
 
@@ -360,17 +373,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                 leading: Radio<String>(
                   value: 'en',
                   // ignore: deprecated_member_use
-                  groupValue:
-                      LocalizationService.currentLocale.value.languageCode,
+                  groupValue: LocalizationService.currentLocale.value.languageCode,
                   // ignore: deprecated_member_use
                   onChanged: (value) {
-                    LocalizationService.currentLocale.value =
-                        const Locale('en');
+                    LocalizationService().changeLocale('en');
                     Navigator.pop(context);
                   },
                 ),
                 onTap: () {
-                  LocalizationService.currentLocale.value = const Locale('en');
+                  LocalizationService().changeLocale('en');
                   Navigator.pop(context);
                 },
               ),
@@ -379,17 +390,15 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                 leading: Radio<String>(
                   value: 'ar',
                   // ignore: deprecated_member_use
-                  groupValue:
-                      LocalizationService.currentLocale.value.languageCode,
+                  groupValue: LocalizationService.currentLocale.value.languageCode,
                   // ignore: deprecated_member_use
                   onChanged: (value) {
-                    LocalizationService.currentLocale.value =
-                        const Locale('ar');
+                    LocalizationService().changeLocale('ar');
                     Navigator.pop(context);
                   },
                 ),
                 onTap: () {
-                  LocalizationService.currentLocale.value = const Locale('ar');
+                  LocalizationService().changeLocale('ar');
                   Navigator.pop(context);
                 },
               ),

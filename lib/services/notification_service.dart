@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:reporting_system/models/notification.dart';
 import 'package:reporting_system/services/api_service.dart';
