@@ -37,10 +37,19 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
 
     // Auto-fetch reports from API on init
     ReportService().fetchReports();
+    _scrollController.addListener(_onScroll);
+  }
+  
+  void _onScroll() {
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      ReportService().fetchMoreReports();
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _controller.dispose();
     _searchController.dispose();
     _scrollController.dispose(); 
@@ -148,76 +157,78 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
 
               Expanded(
                 child: ValueListenableBuilder<List<Report>>(
-                    valueListenable:
-                        ReportService().reports, // Listen to report updates
-                    builder: (context, reports, child) {
-                      // Filter logic
-                      var filteredReports = _selectedFilter == 'all'
-                          ? reports
-                          : reports.where((r) {
-                              final status = r.status;
-                              if (_selectedFilter == 'pending') {
-                                return status == ReportStatus.pending;
-                              }
-                              if (_selectedFilter == 'inprogress') {
-                                return status == ReportStatus.inProgress;
-                              }
-                              if (_selectedFilter == 'solved') {
-                                return status == ReportStatus.solved;
-                              }
-                              return false;
-                            }).toList();
+                  valueListenable: ReportService().reports,
+                  builder: (context, reports, child) {
+                    // Filter logic
+                    var filteredReports = _selectedFilter == 'all'
+                        ? reports
+                        : reports.where((r) {
+                            final status = r.status;
+                            if (_selectedFilter == 'pending') return status == ReportStatus.pending;
+                            if (_selectedFilter == 'inprogress') return status == ReportStatus.inProgress;
+                            if (_selectedFilter == 'solved') return status == ReportStatus.solved;
+                            return false;
+                          }).toList();
 
-                      // Search logic
-                      if (_searchController.text.isNotEmpty) {
-                        filteredReports = filteredReports.where((r) {
-                          final query = _searchController.text.toLowerCase();
-                          final id = r.id.toLowerCase();
-                          final type = r.title.toLowerCase();
-                          return id.contains(query) || type.contains(query);
-                        }).toList();
-                      }
+                    // Search logic
+                    if (_searchController.text.isNotEmpty) {
+                      filteredReports = filteredReports.where((r) {
+                        final query = _searchController.text.toLowerCase();
+                        return r.id.toLowerCase().contains(query) ||
+                            r.title.toLowerCase().contains(query);
+                      }).toList();
+                    }
 
-                      if (filteredReports.isEmpty) {
-                        return Center(child: Text("no_reports_found".tr));
-                      }
+                    if (filteredReports.isEmpty && !ReportService().isFetchingMore) {
+                      return Center(child: Text("no_reports_found".tr));
+                    }
 
-                      return RefreshIndicator(
-                          onRefresh: () async {
-                            await ReportService().fetchReports();
-                          },
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: filteredReports.length,
-                            itemBuilder: (context, index) {
-                              final report = filteredReports[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ReportStatusPage(
-                                            reportId: report.id)),
-                                  );
-                                },
-                                child: ReportCard(
-                                  reportId: report.id,
-                                  status: report.status,
-                                  incidentIcon:
-                                      report.icon ?? Icons.report_problem,
-                                  incidentIconColor:
-                                      report.iconColor ?? Colors.grey,
-                                  incidentType: report.incidentType,
-                                  date:
-                                      "${report.date.year}/${report.date.month}/${report.date.day}",
-                                  aiTag: report.aiTag ?? "unknown_tag".tr,
-                                  confidence: report.formattedConfidence ?? "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await ReportService().fetchReports();
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        // ✅ لو فيه أكتر زود 1 للـ loading indicator
+                        itemCount: filteredReports.length +
+                            (ReportService().hasMore && _selectedFilter == 'all' && _searchController.text.isEmpty ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // ✅ آخر item = loading indicator
+                          if (index == filteredReports.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          final report = filteredReports[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportStatusPage(reportId: report.id),
                                 ),
                               );
                             },
-                          ));
-                    }),
+                            child: ReportCard(
+                              reportId: report.id,
+                              status: report.status,
+                              incidentIcon: report.icon ?? Icons.report_problem,
+                              incidentIconColor: report.iconColor ?? Colors.grey,
+                              incidentType: report.incidentType,
+                              date: "${report.date.year}/${report.date.month}/${report.date.day}",
+                              aiTag: report.aiTag ?? "unknown_tag".tr,
+                              confidence: report.formattedConfidence ??
+                                  "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

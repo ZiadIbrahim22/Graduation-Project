@@ -757,7 +757,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
   @override
   void initState() {
     super.initState();
-    final user = UserService().currentUser.value;
+    // final user = UserService().currentUser.value;
     // _currentPasswordController.text = user?.password ?? '';
     _currentPasswordController.text = '';
 
@@ -3371,10 +3371,19 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
 
     // Auto-fetch reports from API on init
     ReportService().fetchReports();
+    _scrollController.addListener(_onScroll);
+  }
+  
+  void _onScroll() {
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 200) {
+      ReportService().fetchMoreReports();
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _controller.dispose();
     _searchController.dispose();
     _scrollController.dispose(); 
@@ -3482,76 +3491,78 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
 
               Expanded(
                 child: ValueListenableBuilder<List<Report>>(
-                    valueListenable:
-                        ReportService().reports, // Listen to report updates
-                    builder: (context, reports, child) {
-                      // Filter logic
-                      var filteredReports = _selectedFilter == 'all'
-                          ? reports
-                          : reports.where((r) {
-                              final status = r.status;
-                              if (_selectedFilter == 'pending') {
-                                return status == ReportStatus.pending;
-                              }
-                              if (_selectedFilter == 'inprogress') {
-                                return status == ReportStatus.inProgress;
-                              }
-                              if (_selectedFilter == 'solved') {
-                                return status == ReportStatus.solved;
-                              }
-                              return false;
-                            }).toList();
+                  valueListenable: ReportService().reports,
+                  builder: (context, reports, child) {
+                    // Filter logic
+                    var filteredReports = _selectedFilter == 'all'
+                        ? reports
+                        : reports.where((r) {
+                            final status = r.status;
+                            if (_selectedFilter == 'pending') return status == ReportStatus.pending;
+                            if (_selectedFilter == 'inprogress') return status == ReportStatus.inProgress;
+                            if (_selectedFilter == 'solved') return status == ReportStatus.solved;
+                            return false;
+                          }).toList();
 
-                      // Search logic
-                      if (_searchController.text.isNotEmpty) {
-                        filteredReports = filteredReports.where((r) {
-                          final query = _searchController.text.toLowerCase();
-                          final id = r.id.toLowerCase();
-                          final type = r.title.toLowerCase();
-                          return id.contains(query) || type.contains(query);
-                        }).toList();
-                      }
+                    // Search logic
+                    if (_searchController.text.isNotEmpty) {
+                      filteredReports = filteredReports.where((r) {
+                        final query = _searchController.text.toLowerCase();
+                        return r.id.toLowerCase().contains(query) ||
+                            r.title.toLowerCase().contains(query);
+                      }).toList();
+                    }
 
-                      if (filteredReports.isEmpty) {
-                        return Center(child: Text("no_reports_found".tr));
-                      }
+                    if (filteredReports.isEmpty && !ReportService().isFetchingMore) {
+                      return Center(child: Text("no_reports_found".tr));
+                    }
 
-                      return RefreshIndicator(
-                          onRefresh: () async {
-                            await ReportService().fetchReports();
-                          },
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: filteredReports.length,
-                            itemBuilder: (context, index) {
-                              final report = filteredReports[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ReportStatusPage(
-                                            reportId: report.id)),
-                                  );
-                                },
-                                child: ReportCard(
-                                  reportId: report.id,
-                                  status: report.status,
-                                  incidentIcon:
-                                      report.icon ?? Icons.report_problem,
-                                  incidentIconColor:
-                                      report.iconColor ?? Colors.grey,
-                                  incidentType: report.incidentType,
-                                  date:
-                                      "${report.date.year}/${report.date.month}/${report.date.day}",
-                                  aiTag: report.aiTag ?? "unknown_tag".tr,
-                                  confidence: report.formattedConfidence ?? "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await ReportService().fetchReports();
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        // ✅ لو فيه أكتر زود 1 للـ loading indicator
+                        itemCount: filteredReports.length +
+                            (ReportService().hasMore && _selectedFilter == 'all' && _searchController.text.isEmpty ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // ✅ آخر item = loading indicator
+                          if (index == filteredReports.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          final report = filteredReports[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReportStatusPage(reportId: report.id),
                                 ),
                               );
                             },
-                          ));
-                    }),
+                            child: ReportCard(
+                              reportId: report.id,
+                              status: report.status,
+                              incidentIcon: report.icon ?? Icons.report_problem,
+                              incidentIconColor: report.iconColor ?? Colors.grey,
+                              incidentType: report.incidentType,
+                              date: "${report.date.year}/${report.date.month}/${report.date.day}",
+                              aiTag: report.aiTag ?? "unknown_tag".tr,
+                              confidence: report.formattedConfidence ??
+                                  "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -4422,10 +4433,13 @@ class ApiService {
   // }
 
   // --- Fetch Reports ---
-  static Future<List<dynamic>> fetchMyReports(String token) async {
+  static Future<List<dynamic>> fetchMyReports(
+    String token, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     final response = await http.get(
-      Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=1000'), // API for fetch my reports
+      Uri.parse('${ApiConfig.baseUrl}/api/Reports/History?page=$page&pageSize=$pageSize'),
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -4434,12 +4448,8 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final body = jsonDecode(response.body);
-      if (body is List) {
-        return body;
-      } else if (body is Map) {
-        // Handle wrapped responses like {"data": [...]} or {"reports": [...]}
-        return body['data'] ?? body['reports'] ?? body['items'] ?? [];
-      }
+      if (body is List) return body;
+      if (body is Map) return body['data'] ?? body['reports'] ?? body['items'] ?? [];
       return [];
     } else {
       throw Exception('Failed to fetch data: ${response.body}');
@@ -5113,26 +5123,55 @@ class ReportService {
   final ValueNotifier<List<Report>> _reports = ValueNotifier([]);
   ValueNotifier<List<Report>> get reports => _reports;
 
+  // ✅ حاجات جديدة للـ pagination
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+  bool _hasMore = true;
+  bool _isFetchingMore = false;
+
+  bool get hasMore => _hasMore;
+  bool get isFetchingMore => _isFetchingMore;
+
   // --- Fetch Reports ---
   Future<void> fetchReports() async {
-    print("Fetching reports...");
+    _currentPage = 1;
+    _hasMore = true;
+    _reports.value = [];
+    await _loadPage();
+  }
+  // تحميل صفحة جديدة — بيضيف على القديم
+  Future<void> fetchMoreReports() async {
+    if (!_hasMore || _isFetchingMore) return; // لو مفيش أكتر أو لسه شايل
+    await _loadPage();
+  }
+
+  Future<void> _loadPage() async {
     try {
+      _isFetchingMore = true;
+
       String? token = await UserService().getValidToken();
-      print('Token loaded: $token');
-      if (token == null) {
-        throw Exception("Session expired, please login again");
-      }
+      if (token == null) throw Exception("Session expired");
 
-      final List<dynamic> data = await ApiService.fetchMyReports(token);
-      print("Reports data: $data");
+      final List<dynamic> data = await ApiService.fetchMyReports(
+        token,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
 
-      List<Report> newReports =
-          data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
+      final newReports = data.map((j) => Report.fromJson(j)).toList();
       newReports.sort((a, b) => b.date.compareTo(a.date));
-      _reports.value = newReports;
+
+      // لو رجع أقل من الـ pageSize يبقى وصلنا للآخر
+      if (newReports.length < _pageSize) _hasMore = false;
+
+      // ✅ ضيف الجديد على القديم (مش تبديل)
+      _reports.value = [..._reports.value, ...newReports];
+      _currentPage++;
+
     } catch (e) {
-      print("Error fetching reports: $e");
-      _reports.value = [];
+      debugPrint("Error fetching reports: $e");
+    } finally {
+      _isFetchingMore = false;
     }
   }
 
@@ -5177,7 +5216,7 @@ class ReportService {
   Report? getReportById(String id) {
     try {
       return _reports.value.firstWhere((r) => r.id == id);
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -5185,6 +5224,8 @@ class ReportService {
   // --- Clear Data ---
   Future<void> clearData() async {
     _reports.value = [];
+    _currentPage = 1;
+    _hasMore = true;
   }
 }
 

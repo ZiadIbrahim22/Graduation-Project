@@ -13,26 +13,55 @@ class ReportService {
   final ValueNotifier<List<Report>> _reports = ValueNotifier([]);
   ValueNotifier<List<Report>> get reports => _reports;
 
+  // ✅ حاجات جديدة للـ pagination
+  int _currentPage = 1;
+  static const int _pageSize = 20;
+  bool _hasMore = true;
+  bool _isFetchingMore = false;
+
+  bool get hasMore => _hasMore;
+  bool get isFetchingMore => _isFetchingMore;
+
   // --- Fetch Reports ---
   Future<void> fetchReports() async {
-    print("Fetching reports...");
+    _currentPage = 1;
+    _hasMore = true;
+    _reports.value = [];
+    await _loadPage();
+  }
+  // تحميل صفحة جديدة — بيضيف على القديم
+  Future<void> fetchMoreReports() async {
+    if (!_hasMore || _isFetchingMore) return; // لو مفيش أكتر أو لسه شايل
+    await _loadPage();
+  }
+
+  Future<void> _loadPage() async {
     try {
+      _isFetchingMore = true;
+
       String? token = await UserService().getValidToken();
-      print('Token loaded: $token');
-      if (token == null) {
-        throw Exception("Session expired, please login again");
-      }
+      if (token == null) throw Exception("Session expired");
 
-      final List<dynamic> data = await ApiService.fetchMyReports(token);
-      print("Reports data: $data");
+      final List<dynamic> data = await ApiService.fetchMyReports(
+        token,
+        page: _currentPage,
+        pageSize: _pageSize,
+      );
 
-      List<Report> newReports =
-          data.map((jsonItem) => Report.fromJson(jsonItem)).toList();
+      final newReports = data.map((j) => Report.fromJson(j)).toList();
       newReports.sort((a, b) => b.date.compareTo(a.date));
-      _reports.value = newReports;
+
+      // لو رجع أقل من الـ pageSize يبقى وصلنا للآخر
+      if (newReports.length < _pageSize) _hasMore = false;
+
+      // ✅ ضيف الجديد على القديم (مش تبديل)
+      _reports.value = [..._reports.value, ...newReports];
+      _currentPage++;
+
     } catch (e) {
-      print("Error fetching reports: $e");
-      _reports.value = [];
+      debugPrint("Error fetching reports: $e");
+    } finally {
+      _isFetchingMore = false;
     }
   }
 
@@ -77,7 +106,7 @@ class ReportService {
   Report? getReportById(String id) {
     try {
       return _reports.value.firstWhere((r) => r.id == id);
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -85,5 +114,7 @@ class ReportService {
   // --- Clear Data ---
   Future<void> clearData() async {
     _reports.value = [];
+    _currentPage = 1;
+    _hasMore = true;
   }
 }

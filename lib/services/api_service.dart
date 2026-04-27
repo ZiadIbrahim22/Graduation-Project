@@ -194,10 +194,13 @@ class ApiService {
   // }
 
   // --- Fetch Reports ---
-  static Future<List<dynamic>> fetchMyReports(String token) async {
+  static Future<List<dynamic>> fetchMyReports(
+    String token, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     final response = await http.get(
-      Uri.parse(
-          '${ApiConfig.baseUrl}/api/Reports/History?page=1&pageSize=1000'), // API for fetch my reports
+      Uri.parse('${ApiConfig.baseUrl}/api/Reports/History?page=$page&pageSize=$pageSize'),
       headers: {
         ...ApiConfig.headers,
         'Authorization': 'Bearer $token',
@@ -206,12 +209,8 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final body = jsonDecode(response.body);
-      if (body is List) {
-        return body;
-      } else if (body is Map) {
-        // Handle wrapped responses like {"data": [...]} or {"reports": [...]}
-        return body['data'] ?? body['reports'] ?? body['items'] ?? [];
-      }
+      if (body is List) return body;
+      if (body is Map) return body['data'] ?? body['reports'] ?? body['items'] ?? [];
       return [];
     } else {
       throw Exception('Failed to fetch data: ${response.body}');

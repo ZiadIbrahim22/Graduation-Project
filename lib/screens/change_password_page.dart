@@ -31,7 +31,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage>
   @override
   void initState() {
     super.initState();
-    final user = UserService().currentUser.value;
+    // final user = UserService().currentUser.value;
     // _currentPasswordController.text = user?.password ?? '';
     _currentPasswordController.text = '';
 
