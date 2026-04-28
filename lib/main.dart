@@ -108,6 +108,31 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ضيف الكلاس ده قبل class MainScreen
+class _SubRouteObserver extends NavigatorObserver {
+  final ValueNotifier<int> counter;
+
+  _SubRouteObserver(this.counter);
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    // لما بيدخل صفحة جديدة وفيه صفحة قبلها = sub-page
+    if (previousRoute != null) {
+      counter.value++;
+    }
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    if (counter.value > 0) counter.value--;
+  }
+
+  @override
+  void didRemove(Route route, Route? previousRoute) {
+    if (counter.value > 0) counter.value--;
+  }
+}
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -118,6 +143,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+
+  // ✅ ValueNotifier عدّاد الصفحات الداخلية
+  final ValueNotifier<int> _subRouteCount = ValueNotifier(0);
+  
   // مفاتيح مستقلة لكل tab
   List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
@@ -125,9 +154,17 @@ class _MainScreenState extends State<MainScreen> {
     GlobalKey<NavigatorState>(),
   ];
 
+  // ✅ observers لكل navigator
+  late List<_SubRouteObserver> _observers;
+
   @override
   void initState() {
     super.initState();
+    _observers = [
+      _SubRouteObserver(_subRouteCount),
+      _SubRouteObserver(_subRouteCount),
+      _SubRouteObserver(_subRouteCount),
+    ];
     // ✅ استمع لتغيير اللغة وأعد بناء الـ Navigators
     LocalizationService.currentLocale.addListener(_onLocaleChanged);
   }
@@ -140,6 +177,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onLocaleChanged() {
     setState(() {
+       _subRouteCount.value = 0; // ✅ reset لما بتتغير اللغة
       // ✅ GlobalKeys جديدة = الصفحات الجوه بتتبنى من أول وجديد بالترجمة الجديدة
       _navigatorKeys = [
         GlobalKey<NavigatorState>(),
@@ -174,7 +212,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildNavigator(int index, Widget page) {
     return Navigator(
       key: _navigatorKeys[index],
-      observers: [],
+      observers: [_observers[index]],
       onGenerateRoute: (settings) => MaterialPageRoute(
         builder: (_) => page,
         settings: settings,
@@ -196,9 +234,24 @@ class _MainScreenState extends State<MainScreen> {
             _buildNavigator(2, const ProfileSettingsPage()),
           ],
         ),
-        bottomNavigationBar: CustomBottomNavBar(
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
+         bottomNavigationBar: ValueListenableBuilder<int>(
+          valueListenable: _subRouteCount,
+          builder: (context, count, child) {
+            return AnimatedSlide(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              offset: count > 0 ? const Offset(0, 1) : Offset.zero,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: count > 0 ? 0.0 : 1.0,
+                child: child!,
+              ),
+            );
+          },
+          child: CustomBottomNavBar(
+            selectedIndex: _selectedIndex,
+            onItemTapped: _onItemTapped,
+          ),
         ),
       ),
     );

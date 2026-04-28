@@ -37,7 +37,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar>
   static const double _diveDepth = 45.0;
 
   // عمق الـ notch المرسوم في الشريط
-  static const double _notchDepth = 35.0;
+  static const double _notchDepth = 32.0;
 
   static const Color _navColor = Color(0xFF1e3a8a);
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
