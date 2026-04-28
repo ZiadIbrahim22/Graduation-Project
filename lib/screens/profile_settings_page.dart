@@ -162,19 +162,53 @@ class _ProfileSettingsPageState extends State<ProfileSettingsPage>
                           return Stack(
                             alignment: Alignment.center,
                             children: [
-                              CircleAvatar(
-                                radius: 50,
-                                backgroundColor: Colors.grey[800],
-                                backgroundImage: _image != null
-                                    ? FileImage(_image!)
-                                    : (imageUrl != null && imageUrl.isNotEmpty
-                                        ? NetworkImage(imageUrl)
-                                        : null) as ImageProvider?,
-                                child: (_image == null &&
-                                        (imageUrl == null || imageUrl.isEmpty))
-                                    ? const Icon(Icons.person,
-                                        size: 65, color: Colors.white)
-                                    : null,
+                              GestureDetector(
+                                onTap: () {
+                                  // مفيش صورة = مفيش حاجة تتفتح
+                                  // final String? imageUrl = UserService().currentUser.value?.profileImage;
+                                  if (_image == null && (imageUrl == null || imageUrl.isEmpty)) return;
+
+                                  showDialog(
+                                    context: context,
+                                    barrierColor: Colors.black87,
+                                    builder: (_) => Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      insetPadding: EdgeInsets.zero,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          // الصورة بـ Hero animation
+                                          Hero(
+                                            tag: 'profile_image',
+                                            child: ClipOval(
+                                              child: _image != null
+                                                  ? Image.file(_image!,
+                                                      width: 300, height: 300, fit: BoxFit.cover)
+                                                  : Image.network(imageUrl!,
+                                                      width: 300, height: 300, fit: BoxFit.cover),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Hero(
+                                  tag: 'profile_image',
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey[800],
+                                    backgroundImage: _image != null
+                                        ? FileImage(_image!)
+                                        : (imageUrl != null && imageUrl.isNotEmpty
+                                            ? NetworkImage(imageUrl)
+                                            : null) as ImageProvider?,
+                                    child: (_image == null &&
+                                            (imageUrl == null || imageUrl.isEmpty))
+                                        ? const Icon(Icons.person, size: 65, color: Colors.white)
+                                        : null,
+                                  ),
+                                ),
                               ),
                               if (_isUploadingImage)
                                 Container(

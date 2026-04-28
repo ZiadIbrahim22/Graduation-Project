@@ -14,7 +14,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:reporting_system/services/notification_service.dart';
 import 'firebase_options.dart';
 import 'package:toastification/toastification.dart';
-
+import 'package:flutter/services.dart';
 
 
 // 1. إنشاء مفتاح عام للتنقل (Navigator Key)
@@ -23,6 +23,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
+  ));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true, // يخلي الإشعار يظهر كـ Alert
@@ -183,6 +187,7 @@ class _MainScreenState extends State<MainScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
+        extendBody: true,
         body: IndexedStack(
           index: _selectedIndex,
           children: [
