@@ -26,8 +26,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
   @override
   void initState() {
     super.initState();
-    final user = UserService().currentUser.value;
-    _emailController = TextEditingController(text: user?.email ?? '');
+    _emailController = TextEditingController();
     _passwordController = TextEditingController();
 
     _controller = AnimationController(
@@ -66,13 +65,11 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
   Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-
       try {
         final success = await UserService().changeEmail(
           email: _emailController.text,
           password: _passwordController.text,
         );
-
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -98,6 +95,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,7 +137,7 @@ class _ChangeEmailPageState extends State<ChangeEmailPage>
                         ),
                         const SizedBox(height: 30),
                         _buildTextField(
-                          '${'Enter'.tr} ${'email'.tr}',
+                          '${'Enter'.tr} ${'new_email'.tr}',
                           _emailController,
                           keyboardType: TextInputType.emailAddress,
                         ),

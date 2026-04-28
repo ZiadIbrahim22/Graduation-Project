@@ -143,8 +143,8 @@ class LocalizationService {
       'save_changes': 'Save Changes',
       'user': 'User',
 
-      // Change Email
-      'email': 'Email',
+      // Change Email 
+      'new_email': 'New Email',
       'sorry_error_parsing_data':
           'Sorry, there was an error parsing data from the server.',
       'no_internet_connection':
@@ -377,7 +377,7 @@ class LocalizationService {
       'user': 'مستخدم',
 
       // Change Email
-      'email': 'البريد الإلكتروني',
+      'new_email': 'البريد الإلكتروني الجديد',
       'sorry_error_parsing_data': 'عذراً، حدث خطأ في تحليل البيانات من الخادم.',
       'no_internet_connection':
           'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
