@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "74861986359",
+    "project_id": "sirs-e3927",
+    "storage_bucket": "sirs-e3927.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:74861986359:android:296d28c5fd7c3a40e535b2",
+        "android_client_info": {
+          "package_name": "com.example.reporting_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt5KB_NRoILgf0iLW97jbPEeHEGfoUS28"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
