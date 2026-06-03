@@ -41,6 +41,7 @@ class LocalizationService {
       'report_summary': 'My Report Summary',
       'all_time': 'All Time',
       'this_month': 'this month',
+
       // Report Status
       'report_status': 'Report Status',
       'tracking_id': 'Tracking ID',
@@ -224,6 +225,8 @@ class LocalizationService {
       'login': 'Log In',
       'sign_up': 'Sign Up',
       'email_phone': 'Phone Number / Email',
+      'email': 'Email',
+      'phone': 'Phone Number',
       'password': 'Password',
       'national_id': 'National ID',
       'create_new_account': 'Create New Account',
@@ -234,7 +237,6 @@ class LocalizationService {
       'invalid_credentials': 'Invalid email/phone or password',
       'registration_failed': 'Registration failed',
       'full_name': 'Full Name',
-      'phone_number': 'Phone Number',
       'create_account': 'Create Account',
       'already_have_account': 'Already have an account?',
       'login_here': 'Login here',
@@ -243,6 +245,18 @@ class LocalizationService {
       'done': 'Done',
       'Updated_successfully': 'Updated successfully',
       'Image_cropped_successfully': 'Image cropped successfully',
+      'select_language': 'Select Language',
+      'Arabic': 'العربية',
+      'English': 'English',
+      'save': 'Save',
+      'forgot_password': 'Forgot Password',
+      'Report_incidents_quickly_and_easily': 'Report incidents quickly & easily',
+      'Your_safety_our_priority': 'Your safety is our priority',
+      'Fast_&_secure_incident_reporting': 'Fast & secure incident reporting',
+      'Smart_reporting_for_a_safer_workplace': 'Smart reporting for a safer workplace',
+
+
+
 
       // Validation
       'invalid_phone': 'Invalid phone number',
@@ -252,18 +266,15 @@ class LocalizationService {
       'logout_confirm_title': 'Log Out',
       'logout_confirm_msg': 'Are you sure you want to log out?',
       'delete_confirm_title': 'Delete Account',
-      'delete_confirm_msg':
-          'Are you sure? Your account will be permanently deleted.',
+      'delete_confirm_msg': 'Are you sure? Your account will be permanently deleted.',
       'cancel': 'Cancel',
       'yes': 'Yes',
       'ok': 'OK',
-      'delete_account_warning':
-          'This action is irreversible. All your data will be permanently lost.',
+      'delete_account_warning': 'This action is irreversible. All your data will be permanently lost.',
       'enter_your_password': 'Enter your password',
       'reason_for_leaving': 'Reason for leaving (Optional)',
       'tell_us_why': 'Tell us why you are deleting your account...',
-      'delete_confirmation_text':
-          'I understand that this action is permanent and cannot be undone.',
+      'delete_confirmation_text': 'I understand that this action is permanent and cannot be undone.',
       'please_confirm_deletion': 'Please confirm deletion',
       'failed_to_delete_account': 'Failed to delete account',
       'password_required': 'Password is required',
@@ -272,6 +283,30 @@ class LocalizationService {
       'edit_profile_image': 'Edit Profile Image',
       'Failed_to_upload_image': 'Failed to upload image',
       'upload_image_failed': 'Failed to Edit image',
+
+      // Change Password
+      'CREATE_PASSWORD': 'Create Password',
+      'your_new_password_must_be_different_from_previous_used_passwords': 'Your new password must be different from previous used passwords.',
+      'sign_out_from_all_devices': 'Sign out from all devices',
+      'Password_changed_successfully': 'Password changed successfully',
+      'error': 'Error',
+      'failed_to_update_password': 'Failed to update password',
+      'Please_enter_new_password': 'Please enter new password',
+      'Passwords_do_not_match': 'Passwords do not match',
+      
+      // forget password
+      'forget_password': 'Forget Password',
+      'send_code': 'Send Code',
+      'please_enter_your_email_to_receive_a_verification_code': 'Please enter your email to receive a verification code',
+
+      
+      // otp verification screen
+      'confirmation_code': 'Confirmation Code',
+      'enter_the_6_digit_code_sent_to': 'Enter the 6-digit code sent to',
+      'verify': 'Verify',
+      'dont_receive_the_code': 'Don\'t receive the code?',
+      'resend': 'Resend',
+      'resend_in': 'Resend in',
     },
     'ar': {
       // App
@@ -330,10 +365,8 @@ class LocalizationService {
       'Medical_Emergency': 'حالة طبية طارئة',
       'Public_Disturbance': 'إزعاج عام',
       'Other': 'أخرى',
-      'e.g.,_Broken_Streetlight_on_Main_St.':
-          'مثال: عمود إنارة مكسور في شارع رئيسي',
-      'Describe_the_issue_in_detail,_the_more_information,_the_better.':
-          'صف المشكلة بالتفصيل، كلما زادت المعلومات، كان ذلك أفضل.',
+      'e.g.,_Broken_Streetlight_on_Main_St.': 'مثال: عمود إنارة مكسور في شارع رئيسي',
+      'Describe_the_issue_in_detail,_the_more_information,_the_better.': 'صف المشكلة بالتفصيل، كلما زادت المعلومات، كان ذلك أفضل.',
       'Select_a_category': 'اختر نوع البلاغ',
       'Please_select_a_category': 'يرجى تحديد نوع البلاغ',
       'Please_attach_an_image': 'يرجى إرفاق صورة',
@@ -350,10 +383,8 @@ class LocalizationService {
       'loading_address': 'جاري تحميل العنوان...',
       'unknown_location': 'موقع غير معروف',
       'error_fetching_address': 'خطأ في جلب العنوان',
-      'tap_to_select_location_on_map':
-          'اضغط لتحديد الموقع على الخريطة',
-      'select_location_on_map':
-          'اختر الموقع على الخريطة',
+      'tap_to_select_location_on_map': 'اضغط لتحديد الموقع على الخريطة',
+      'select_location_on_map': 'اختر الموقع على الخريطة',
       'error_loading_map': 'خطأ في تحميل الخريطة',
       'tap_to_pinpoint_location': 'اضغط لتحديد الموقع بدقة',
       'Location_pin_dropped': 'تم تحديد موقع الدبوس',
@@ -366,10 +397,8 @@ class LocalizationService {
       'enable_location': 'تفعيل الموقع',
       'open_settings': 'فتح الإعدادات',
       'location_permission_denied': 'تم رفض إذن الموقع',
-      'location_permission_denied_desc':
-          'يرجى السماح بإذن الموقع لاستخدام هذه الميزة.',
-      'location_services_disabled_desc':
-          'يرجى تفعيل خدمات الموقع لاستخدام هذه الميزة.',
+      'location_permission_denied_desc': 'يرجى السماح بإذن الموقع لاستخدام هذه الميزة.',
+      'location_services_disabled_desc': 'يرجى تفعيل خدمات الموقع لاستخدام هذه الميزة.',
 
       // Review Report
       'review_report': 'مراجعة البلاغ',
@@ -377,10 +406,8 @@ class LocalizationService {
       'edit_report': 'تعديل البلاغ',
       'ai_classification': 'نتيجة تصنيف الذكاء الاصطناعي',
       'incident_type': 'نوع البلاغ',
-      'Based_on_your_initial_analysis_the_report_will_be_browsed_to_Police_&_Traffic':
-          'بناءً على تحليلك الأولي، سيتم إرسال البلاغ إلى الشرطة والمرور',
-      'AI_Classification_Result_Traffic_Accident_Severity_High':
-          'نتيجة تصنيف الذكاء الاصطناعي: حادث مروري - شدة: عالية',
+      'Based_on_your_initial_analysis_the_report_will_be_browsed_to_Police_&_Traffic': 'بناءً على تحليلك الأولي، سيتم إرسال البلاغ إلى الشرطة والمرور',
+      'AI_Classification_Result_Traffic_Accident_Severity_High': 'نتيجة تصنيف الذكاء الاصطناعي: حادث مروري - شدة: عالية',
       'Confirm_&_Send_Report_Now': 'تأكيد وإرسال البلاغ الآن',
       'unknown': 'غير معروف',
 
@@ -416,12 +443,9 @@ class LocalizationService {
       // Change Email
       'new_email': 'البريد الإلكتروني الجديد',
       'sorry_error_parsing_data': 'عذراً، حدث خطأ في تحليل البيانات من الخادم.',
-      'no_internet_connection':
-          'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
-      'notification_path_not_found':
-          'لم يتم العثور على مسار الإشعارات على الخادم.',
-      'an_unexpected_error_occurred':
-          'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
+      'no_internet_connection': 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
+      'notification_path_not_found': 'لم يتم العثور على مسار الإشعارات على الخادم.',
+      'an_unexpected_error_occurred': 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
       'please_enter': 'يرجى إدخال',
       'profile_updated_successfully': 'تم تحديث الملف الشخصي بنجاح',
       'Failed_to_update_profile': 'فشل تحديث الملف الشخصي',
@@ -451,17 +475,12 @@ class LocalizationService {
       'retry': 'إعادة المحاولة',
       'no_results_found': 'لا توجد نتائج',
       'no_notifications_yet': 'لا توجد إشعارات',
-      'notification_path_not_found_on_the_server':
-          'مسار الإشعار غير موجود على الخادم.',
+      'notification_path_not_found_on_the_server': 'مسار الإشعار غير موجود على الخادم.',
       'the_requested_page_was_not_found': 'الصفحة المطلوبة غير موجودة.',
-      'please_login_again_to_view_notifications':
-          'يرجى تسجيل الدخول مرة أخرى لعرض الإشعارات.',
-      'an_unexpected_error_occurred_please_try_again_later':
-          'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.',
-      'sorry_there_was_an_error_parsing_data_from_the_server':
-          'عذرًا، حدث خطأ في تحليل البيانات من الخادم.',
-      'no_internet_connection_please_check_your_network':
-          'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
+      'please_login_again_to_view_notifications': 'يرجى تسجيل الدخول مرة أخرى لعرض الإشعارات.',
+      'an_unexpected_error_occurred_please_try_again_later': 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.',
+      'sorry_there_was_an_error_parsing_data_from_the_server': 'عذرًا، حدث خطأ في تحليل البيانات من الخادم.',
+      'no_internet_connection_please_check_your_network': 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
 
       // Categories
       'traffic_accident': 'حادث مروري',
@@ -473,6 +492,8 @@ class LocalizationService {
       'login': 'تسجيل الدخول',
       'sign_up': 'إنشاء حساب',
       'email_phone': 'رقم الهاتف / البريد الإلكتروني',
+      'email': 'البريد الإلكتروني',
+      'phone': 'رقم الهاتف',
       'password': 'كلمة المرور',
       'national_id': 'الرقم القومي',
       'create_new_account': 'إنشاء حساب جديد',
@@ -480,8 +501,7 @@ class LocalizationService {
       'smart_incident_system': 'نظام البلاغات الذكي',
       'password_min_length': 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
       'passwords_not_match': 'كلمات المرور غير متطابقة',
-      'invalid_credentials':
-          'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة',
+      'invalid_credentials': 'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة',
       'registration_failed': 'فشل التسجيل',
       'full_name': 'الاسم الكامل',
       'phone_number': 'رقم الهاتف',
@@ -495,6 +515,16 @@ class LocalizationService {
       'done': 'تم',
       'Updated_successfully': 'تم التحديث',
       'Image_cropped_successfully': 'تم تعديل الصورة بنجاح',
+      'select_language': 'اختر اللغة',
+      'save': 'حفظ',
+      'Arabic': 'العربية',
+      'English': 'English',
+      'forgot_password': 'نسيت كلمة المرور',
+      'Report_incidents_quickly_and_easily': 'أبلغ عن الحوادث بسرعة وأمان',
+      'Your_safety_our_priority': 'سلامتك أولويتنا',
+      'Fast_&_secure_incident_reporting': 'إبلاغ سريع وآمن',
+      'Smart_reporting_for_a_safer_workplace': 'إبلاغ ذكي لمكان عمل أكثر أماناً',
+      
 
       // Dialogs
       'logout_confirm_title': 'تسجيل الخروج',
@@ -504,13 +534,11 @@ class LocalizationService {
       'cancel': 'إلغاء',
       'yes': 'نعم',
       'ok': 'موافق',
-      'delete_account_warning':
-          'هذا الإجراء لا رجعة فيه. سيتم فقد جميع بياناتك بشكل دائم.',
+      'delete_account_warning': 'هذا الإجراء لا رجعة فيه. سيتم فقد جميع بياناتك بشكل دائم.',
       'enter_your_password': 'أدخل كلمة المرور',
       'reason_for_leaving': 'سبب المغادرة (اختياري)',
       'tell_us_why': 'أخبرنا سبب حذف حسابك...',
-      'delete_confirmation_text':
-          'أنا أفهم أن هذا الإجراء دائم ولا يمكن التراجع عنه.',
+      'delete_confirmation_text': 'أنا أفهم أن هذا الإجراء دائم ولا يمكن التراجع عنه.',
       'please_confirm_deletion': 'يرجى تأكيد الحذف',
       'failed_to_delete_account': 'فشل حذف الحساب',
       'password_required': 'كلمة المرور مطلوبة',
@@ -518,7 +546,30 @@ class LocalizationService {
       'select_your_profile_image': 'اختر صورة الملف الشخصي',
       'edit_profile_image': 'تعديل صورة الملف الشخصي',
       'upload_image_failed': 'فشل تعديل الصورة',
-      
+
+      // Change Password
+      'CREATE_PASSWORD': 'إنشاء كلمة مرور',
+      'your_new_password_must_be_different_from_previous_used_passwords': 'يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمات المرور المستخدمة سابقًا.',
+      'sign_out_from_all_devices': 'تسجيل الخروج من جميع الأجهزة',
+      'Password_changed_successfully': 'تم تغيير كلمة المرور بنجاح',
+      'error': 'خطأ',
+      'failed_to_update_password': 'فشل تحديث كلمة المرور',
+      'Please_enter_new_password': 'يرجى إدخال كلمة المرور الجديدة',
+      'Passwords_do_not_match': 'كلمات المرور غير متطابقة',
+
+      // forget password
+      'forget_password': 'نسيت كلمة المرور',
+      'send_code': 'إرسال الرمز',
+      'please_enter_your_email_to_receive_a_verification_code': 'يرجى إدخال بريدك الإلكتروني لاستلام رمز التحقق',
+
+
+      // otp verification screen
+      'confirmation_code': 'رمز التحقق',
+      'enter_the_6_digit_code_sent_to': 'أدخل رمز التحقق المكون من 6 أرقام المرسل إلى',
+      'verify': 'تحقق',
+      'dont_receive_the_code': 'لم تستلم الرمز؟ ',
+      'resend': 'إعادة إرسال',
+      'resend_in': 'إعادة الإرسال في',
     },
   };
 

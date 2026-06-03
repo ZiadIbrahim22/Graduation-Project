@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:reporting_system/services/localization_service.dart';
 import '../../services/auth_provider.dart';
 import 'create_new_password_screen.dart';
 import '../../main.dart'; // To navigate to MainScreen
@@ -109,8 +110,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Code resent successfully!'),
+        SnackBar(
+          content: Text('code_resent_successfully'.tr),
           backgroundColor: Colors.green,
         ),
       );
@@ -141,10 +142,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'CONFIRMATION CODE',
+               Text(
+                'confirmation_code'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2C2C2C),
@@ -152,7 +153,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Enter the 6-digit code sent to\n${widget.email}',
+                '${'enter_the_6_digit_code_sent_to'.tr}\n${widget.email}'.tr,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
@@ -222,9 +223,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             width: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Verify',
-                            style: TextStyle(
+                        :  Text(
+                            'verify'.tr,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -239,16 +240,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Don't receive the code? ",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      Text(
+                        "dont_receive_the_code".tr,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
                         onTap: authProvider.canResend ? _handleResend : null,
                         child: Text(
                           authProvider.canResend
-                              ? "Resend"
-                              : "Resend in ${authProvider.resendCountdown}s",
+                              ? "resend".tr
+                              : "${'resend_in'.tr} ${authProvider.resendCountdown}s",
                           style: TextStyle(
                             color: authProvider.canResend ? const Color(0xFF1E5EFF) : Colors.grey,
                             fontSize: 14,

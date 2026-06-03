@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reporting_system/services/localization_service.dart';
 import '../../services/auth_provider.dart';
 import '../login_page.dart';
 
@@ -41,15 +42,15 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
     String? error;
     if (password.isNotEmpty && password.length < 8) {
-        error = "Password must be at least 8 characters long";
+        error = "Password must be at least 8 characters long".tr;
       } else if (password.isNotEmpty && !RegExp(r'[A-Za-z]').hasMatch(password)) {
-        error = "Password must contain at least one letter";
+        error = "Password must contain at least one letter".tr;
       } else if (password.isNotEmpty && !RegExp(r'\d').hasMatch(password)) {
-        error = "Password must contain at least one number";
+        error = "Password must contain at least one number".tr;
       } else if (password.isNotEmpty && !RegExp(r'[@$!%*#?&]').hasMatch(password)) {
-        error = "Password must contain at least one special character (@\$!%*#?&)";
+        error = "Password must contain at least one special character (@\$!%*#?&)".tr;
       } else if (confirmPassword.isNotEmpty && password != confirmPassword) {
-        error = "Passwords do not match";
+        error = "Passwords do not match".tr;
       }
 
     if (_passwordError != error) {
@@ -79,8 +80,8 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password changed successfully!'),
+         SnackBar(
+          content: Text('Password changed successfully!'.tr),
           backgroundColor: Colors.green,
         ),
       );
@@ -92,7 +93,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
     } else if (authProvider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage!),
+          content: Text(authProvider.errorMessage!.tr),
           backgroundColor: Colors.red,
         ),
       );
@@ -116,20 +117,20 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'CREATE PASSWORD',
+               Text(
+                'CREATE_PASSWORD'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2C2C2C),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Your new password must be different from previous used passwords.',
+               Text(
+                'your_new_password_must_be_different_from_previous_used_passwords'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -145,7 +146,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    hintText: 'password'.tr,
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -174,7 +175,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    hintText: 'Confirm Password',
+                    hintText: 'confirm_password'.tr,
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -217,9 +218,9 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Sign out from all devices',
-                    style: TextStyle(
+                   Text(
+                    'sign_out_from_all_devices'.tr,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF2C2C2C),
                     ),
@@ -245,8 +246,8 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                             width: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Confirm password',
+                        :  Text(
+                            'confirm_password'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
