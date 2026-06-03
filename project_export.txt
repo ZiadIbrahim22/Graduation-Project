@@ -1722,6 +1722,7 @@ import '../services/api_service.dart';
 import '../services/localization_service.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   final VoidCallback? onNavigateToProfile;
@@ -1778,22 +1779,29 @@ class _HomePageState extends State<HomePage>
 
       if (!mounted) return;
 
-      // print("Profile from API: $profile");
-      // print("Stats from API: $stats");
-
       final currentUser = UserService().currentUser.value;
       if (currentUser != null) {
         String rawPhoto = profile['photoUrl'] ?? profile['photo'] ?? '';
-        String fullImageUrl = rawPhoto.isEmpty
-            ? ''
-            : (rawPhoto.startsWith('http')
-                ? rawPhoto
-                : '${ApiConfig.baseUrl}$rawPhoto');
+        String fullImageUrl = '';
+
+        if (rawPhoto.isNotEmpty) {
+          final tempUrl = rawPhoto.startsWith('http')
+              ? rawPhoto
+              : '${ApiConfig.baseUrl}$rawPhoto';
+
+          try {
+            final response = await http.head(Uri.parse(tempUrl));
+            if (response.statusCode == 200) {
+              fullImageUrl = tempUrl;
+            }
+          } catch (_) {
+            fullImageUrl = '';
+          }
+        }
 
         final updatedUser = currentUser.copyWith(
           fullName: profile['fullName'] ?? currentUser.fullName,
-          profileImage:
-              fullImageUrl.isNotEmpty ? fullImageUrl : currentUser.profileImage,
+          profileImage: fullImageUrl,
         );
         await UserService().saveUser(updatedUser);
       }
@@ -1812,7 +1820,6 @@ class _HomePageState extends State<HomePage>
         });
       }
     } catch (e) {
-      // print("Error loading home data: $e");
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -1830,83 +1837,67 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: FadeTransition(
-            opacity: _fade,
-            child: SlideTransition(
-              position: _slide,
-              child: SafeArea(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    await loadHomeData();
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(
+          position: _slide,
+          child: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await loadHomeData();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Top section ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Top section
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              InkWell(
-                                onTap: widget.onNavigateToProfile,
-                                borderRadius: BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Row(
-                                    children: [
-                                      ValueListenableBuilder<UserModel?>(
-                                        valueListenable:
-                                            UserService().currentUser,
-                                        builder: (context, user, child) {
-                                          String? imageUrl = user?.profileImage;
-                                          final isDark = Theme.of(context).brightness == Brightness.dark;
-                                          final initial = user?.fullName.isNotEmpty == true
-                                              ? user!.fullName[0].toUpperCase()
-                                              : '?';
+                          InkWell(
+                            onTap: widget.onNavigateToProfile,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Row(
+                                children: [
+                                  ValueListenableBuilder<UserModel?>(
+                                    valueListenable: UserService().currentUser,
+                                    builder: (context, user, child) {
+                                      String? imageUrl = user?.profileImage;
+                                      final isDark = Theme.of(context).brightness == Brightness.dark;
+                                      final initial = user?.fullName.isNotEmpty == true
+                                          ? user!.fullName[0].toUpperCase()
+                                          : '?';
 
-                                          return Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              gradient: isDark
-                                                  ? const LinearGradient(
-                                                      colors: [Color(0xFF0f172a), Color(0xFF1e3a8a)],
-                                                      begin: Alignment.topLeft,
-                                                      end: Alignment.bottomRight,
-                                                    )
-                                                  : const LinearGradient(
-                                                      colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)],
-                                                      begin: Alignment.topLeft,
-                                                      end: Alignment.bottomRight,
-                                                    ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            clipBehavior: Clip.antiAlias,
-                                            child: (imageUrl != null &&
-                                                    imageUrl.isNotEmpty)
-                                                ? Image.network(
-                                                    imageUrl,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (context,
-                                                        error, stackTrace) {
-                                                      // لو فشل التحميل (404)، نظهر placeholder
-                                                      return Center(
-                                                        child: Text(
-                                                          initial,
-                                                          style: const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 20,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  )
-                                                : Center(
+                                      return Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          gradient: isDark
+                                              ? const LinearGradient(
+                                                  colors: [Color(0xFF0f172a), Color(0xFF1e3a8a)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                )
+                                              : const LinearGradient(
+                                                  colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: (imageUrl != null && imageUrl.isNotEmpty)
+                                            ? Image.network(
+                                                imageUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return Center(
                                                     child: Text(
                                                       initial,
                                                       style: const TextStyle(
@@ -1915,275 +1906,279 @@ class _HomePageState extends State<HomePage>
                                                         fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
+                                                  );
+                                                },
+                                              )
+                                            : Center(
+                                                child: Text(
+                                                  initial,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
+                                                ),
+                                              ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'welcome'.tr,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.color ??
+                                              Colors.grey,
+                                        ),
+                                      ),
+                                      ValueListenableBuilder<UserModel?>(
+                                        valueListenable: UserService().currentUser,
+                                        builder: (context, user, _) {
+                                          return Text(
+                                            "${user?.fullName ?? 'User'}!",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.color ??
+                                                  Colors.black,
+                                            ),
                                           );
                                         },
                                       ),
-                                      const SizedBox(width: 12),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'welcome'.tr,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium
-                                                      ?.color ??
-                                                  Colors.grey,
-                                            ),
-                                          ),
-                                          ValueListenableBuilder<UserModel?>(
-                                            valueListenable:
-                                                UserService().currentUser,
-                                            builder: (context, user, _) {
-                                              return Text(
-                                                "${user?.fullName ?? 'User'}!",
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyLarge
-                                                          ?.color ??
-                                                      Colors.black,
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
                                     ],
                                   ),
-                                ),
-                              ),
-                              Stack(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).cardColor,
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Theme.of(context)
-                                              .shadowColor
-                                              .withValues(alpha: 0.05),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const NotificationCenterPage()));
-                                      },
-                                      child: const Icon(
-                                          Icons.notifications_none,
-                                          size: 28),
-                                    ),
-                                  ),
-                                  if ((_stats['notifications'] ?? 0) > 0)
-                                    Positioned(
-                                      right: 8,
-                                      top: 8,
-                                      child: Container(
-                                        width: 10,
-                                        height: 10,
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          // Create New Report Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const CreateReportPage()));
-                                loadHomeData();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1e3a8a),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
+                          // ── Notification Icon ──
+                          Stack(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Theme.of(context)
+                                          .shadowColor
+                                          .withValues(alpha: 0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                                elevation: 0,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const NotificationCenterPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Icon(Icons.notifications_none, size: 28),
+                                ),
                               ),
-                              child: Text(
-                                'create_report'.tr,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Report Summary Card
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(context)
-                                      .shadowColor
-                                      .withValues(alpha: 0.05),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: _isLoading
-                                ? Center(
-                                    child: Padding(
-                                    padding: EdgeInsets.all(20.0),
-                                    child: CircularProgressIndicator(
-                                        color: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.color ??
-                                            Colors.grey),
-                                  ))
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'report_summary'.tr,
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyLarge
-                                                    ?.color ??
-                                                Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${_stats['totalReports']} ${'total_reports'.tr}",
-                                                style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyLarge
-                                                          ?.color ??
-                                                      Colors.black,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              RichText(
-                                                text: TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: "${'all_time'.tr} ",
-                                                      style: TextStyle(
-                                                          color:
-                                                              Theme.of(context)
-                                                                      .textTheme
-                                                                      .bodyLarge
-                                                                      ?.color ??
-                                                                  Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          "+${_stats['thisMonth']} ${'this_month'.tr}",
-                                                      style: TextStyle(
-                                                          color:
-                                                              Theme.of(context)
-                                                                      .textTheme
-                                                                      .bodyLarge
-                                                                      ?.color ??
-                                                                  Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          // Mascot/Icon
-                                          Opacity(
-                                            opacity: 0.8,
-                                            child: Icon(
-                                                Icons.analytics_outlined,
-                                                size: 40,
-                                                color: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyLarge
-                                                        ?.color ??
-                                                    Colors.black),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 24),
-
-                                      // Bar Chart
-                                      SizedBox(
-                                        height: 200,
-                                        child: ReportChart(
-                                          pending:
-                                              _stats['pending']?.toDouble() ??
-                                                  0,
-                                          inProgress: _stats['inProgress']
-                                                  ?.toDouble() ??
-                                              0,
-                                          solved:
-                                              _stats['solved']?.toDouble() ?? 0,
-                                        ),
-                                      ),
-                                    ],
+                              if ((_stats['notifications'] ?? 0) > 0)
+                                Positioned(
+                                  right: 8,
+                                  top: 8,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 16),
+
+                      // ── Create New Report Button ──
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CreateReportPage(),
+                              ),
+                            );
+                            loadHomeData();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1e3a8a),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'create_report'.tr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ── Report Summary Card ──
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context)
+                                  .shadowColor
+                                  .withValues(alpha: 0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: _isLoading
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: CircularProgressIndicator(
+                                    color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color ??
+                                        Colors.grey,
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'report_summary'.tr,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.color ??
+                                          Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "${_stats['totalReports']} ${'total_reports'.tr}",
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.color ??
+                                                  Colors.black,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: "${'all_time'.tr} ",
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyLarge
+                                                            ?.color ??
+                                                        Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: "+${_stats['thisMonth']} ${'this_month'.tr}",
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyLarge
+                                                            ?.color ??
+                                                        Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Opacity(
+                                        opacity: 0.8,
+                                        child: Icon(
+                                          Icons.analytics_outlined,
+                                          size: 40,
+                                          color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge
+                                                  ?.color ??
+                                              Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    height: 200,
+                                    child: ReportChart(
+                                      pending: _stats['pending']?.toDouble() ?? 0,
+                                      inProgress: _stats['inProgress']?.toDouble() ?? 0,
+                                      solved: _stats['solved']?.toDouble() ?? 0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            )));
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
 === C:\Projects\Reporting System\lib\screens\login_page.dart ===
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:reporting_system/services/user_service.dart';
 import '../widgets/custom_button.dart';
@@ -2206,10 +2201,20 @@ class _LoginPageState extends State<LoginPage>
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  String _selectedLanguage = 'en';
 
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<Offset> _slide;
+
+  // ── Subtitles Keys (مش الترجمة نفسها) ──
+  final List<String> _subtitleKeys = [
+    'Report_incidents_quickly_and_easily',
+    'Your_safety_our_priority',
+    'Fast_secure_incident_reporting',
+    'Smart_reporting_for_a_safer_workplace',
+  ];
+  int _currentSubtitleIndex = 0;
 
   @override
   void initState() {
@@ -2222,43 +2227,270 @@ class _LoginPageState extends State<LoginPage>
     _slide = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
+
+    _selectedLanguage = LocalizationService.currentLocale.value.languageCode;
+    LocalizationService.currentLocale.addListener(_onLocaleChanged);
+
+    // ── Timer للـ subtitles ──
+    Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentSubtitleIndex = (_currentSubtitleIndex + 1) % _subtitleKeys.length;
+        });
+      }
+    });
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) {
+      setState(() {
+        _selectedLanguage =
+            LocalizationService.currentLocale.value.languageCode;
+      });
+    }
   }
 
   @override
   void dispose() {
+    LocalizationService.currentLocale.removeListener(_onLocaleChanged);
     _controller.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() => _isLoading = true);
+  // ─────────────────────────────────────────────
+  //  Language Selector Bottom Sheet
+  // ─────────────────────────────────────────────
+  void _showLanguageSelector() {
+    String tempLanguage = _selectedLanguage;
 
-    final success = await UserService().login(
-      _emailController.text,
-      _passwordController.text,
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return Directionality(
+          textDirection: _selectedLanguage == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+          child: StatefulBuilder(
+            builder: (context, setModalState) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 16,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1e3a8a)
+                                  .withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.translate_rounded,
+                              color: Color(0xFF1e3a8a),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'select_language'.tr,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1a1a1a),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildLanguageOption(
+                      flag: '🇸🇦',
+                      language: 'العربية',
+                      code: 'ar',
+                      isSelected: tempLanguage == 'ar',
+                      onTap: () => setModalState(() => tempLanguage = 'ar'),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildLanguageOption(
+                      flag: '🇺🇸',
+                      language: 'English',
+                      code: 'en',
+                      isSelected: tempLanguage == 'en',
+                      onTap: () => setModalState(() => tempLanguage = 'en'),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await LocalizationService()
+                              .changeLocale(tempLanguage);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1e3a8a),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          tempLanguage == 'ar' ? 'حفظ' : 'Save',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
+  }
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (success) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('invalid_credentials'.tr), backgroundColor: Colors.red),
-        );
+  Widget _buildLanguageOption({
+    required String flag,
+    required String language,
+    required String code,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1e3a8a).withValues(alpha: 0.07)
+              : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF1e3a8a).withValues(alpha: 0.4)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            children: [
+              Text(flag, style: const TextStyle(fontSize: 26)),
+              const SizedBox(width: 14),
+              Text(
+                language,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? const Color(0xFF1e3a8a)
+                      : const Color(0xFF1a1a1a),
+                ),
+              ),
+              const Spacer(),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF1e3a8a)
+                        : Colors.grey.withValues(alpha: 0.4),
+                    width: 2,
+                  ),
+                  color: isSelected
+                      ? const Color(0xFF1e3a8a)
+                      : Colors.transparent,
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded,
+                        color: Colors.white, size: 14)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  //  Login logic
+  // ─────────────────────────────────────────────
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      final success = await UserService().login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('invalid_credentials'.tr),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
-}
 
+  // ─────────────────────────────────────────────
+  //  Build
+  // ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final bool isArabic = _selectedLanguage == 'ar';
+
     return Scaffold(
       backgroundColor: const Color(0xFFf5f5f5),
       body: FadeTransition(
@@ -2269,177 +2501,261 @@ class _LoginPageState extends State<LoginPage>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Header
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1e3a8a),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1e3a8a),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(30),
+                          bottomRight: Radius.circular(30),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.fromLTRB(60, 40, 60, 40),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'app_title'.tr,
+                                  textAlign: TextAlign.center,
+                                  textDirection: isArabic
+                                      ? TextDirection.rtl
+                                      : TextDirection.ltr,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 800),
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 0.3),
+                                          end: Offset.zero,
+                                        ).animate(CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOut,
+                                        )),
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    _subtitleKeys[_currentSubtitleIndex].tr,
+                                    key: ValueKey<int>(_currentSubtitleIndex),
+                                    textAlign: TextAlign.center,
+                                    textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.notifications,
-                            color: Colors.white,
-                            size: 40,
+                          Positioned(
+                            top: 12,
+                            right: 16,
+                            child: GestureDetector(
+                              onTap: _showLanguageSelector,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color:
+                                      Colors.white.withValues(alpha: 0.18),
+                                  borderRadius:
+                                      BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.35),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      isArabic ? '🇸🇦' : '🇺🇸',
+                                      style:
+                                          const TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'app_title'.tr,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'smart_incident_system'.tr,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 30),
 
-                  // Login Card
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'login'.tr,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1a1a1a),
-                            ),
+                  Directionality(
+                    textDirection: isArabic
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                    child: Container(
+                      margin:
+                          const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
-                          const SizedBox(height: 24),
-
-                          // Email Field
-                          _buildTextField(
-                            controller: _emailController,
-                            label: 'email_phone'.tr,
-                            icon: Icons.email_outlined,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'field_required'.tr;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Password Field
-                          _buildTextField(
-                            controller: _passwordController,
-                            label: 'password'.tr,
-                            icon: Icons.lock_outline,
-                            obscureText: _obscurePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'field_required'.tr;
-                              }
-                              return null;
-                            },
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ForgotPasswordScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Forgot Password?',
-                                style: TextStyle(
-                                  color: Color(0xFF1e3a8a),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Login Button
-                          _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : CustomButton(
-                                  text: 'login'.tr,
-                                  onPressed: _login,
-                                ),
-                          const SizedBox(height: 16),
-
-                          // Create Account Link
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignUpPage(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'create_new_account'.tr,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                         ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'login'.tr,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1a1a1a),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            _buildTextField(
+                              controller: _emailController,
+                              label: 'email_phone'.tr,
+                              icon: Icons.email_outlined,
+                              isArabic: isArabic,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'field_required'.tr;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            _buildTextField(
+                              controller: _passwordController,
+                              label: 'password'.tr,
+                              icon: Icons.lock_outline,
+                              obscureText: _obscurePassword,
+                              isArabic: isArabic,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() => _obscurePassword =
+                                      !_obscurePassword);
+                                },
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'field_required'.tr;
+                                }
+                                return null;
+                              },
+                            ),
+
+                            Align(
+                              alignment: isArabic
+                                  ? Alignment.centerLeft
+                                  : Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ForgotPasswordScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'forgot_password'.tr,
+                                  style: const TextStyle(
+                                    color: Color(0xFF1e3a8a),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            _isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator())
+                                : CustomButton(
+                                    text: 'login'.tr,
+                                    onPressed: _login,
+                                  ),
+                            const SizedBox(height: 16),
+
+                            Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SignUpPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'create_new_account'.tr,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -2458,6 +2774,7 @@ class _LoginPageState extends State<LoginPage>
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required bool isArabic,
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
@@ -2466,6 +2783,8 @@ class _LoginPageState extends State<LoginPage>
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      textDirection:
+          isArabic ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF1e3a8a)),
@@ -2478,11 +2797,13 @@ class _LoginPageState extends State<LoginPage>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+          borderSide:
+              BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF1e3a8a)),
+          borderSide:
+              const BorderSide(color: Color(0xFF1e3a8a)),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -2492,7 +2813,6 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 }
-
 
 === C:\Projects\Reporting System\lib\screens\map_picker_page.dart ===
 import 'dart:async';
@@ -6690,6 +7010,7 @@ class _SignUpPageState extends State<SignUpPage>
 === C:\Projects\Reporting System\lib\screens\auth\create_new_password_screen.dart ===
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reporting_system/services/localization_service.dart';
 import '../../services/auth_provider.dart';
 import '../login_page.dart';
 
@@ -6731,15 +7052,15 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
     String? error;
     if (password.isNotEmpty && password.length < 8) {
-        error = "Password must be at least 8 characters long";
+        error = "Password must be at least 8 characters long".tr;
       } else if (password.isNotEmpty && !RegExp(r'[A-Za-z]').hasMatch(password)) {
-        error = "Password must contain at least one letter";
+        error = "Password must contain at least one letter".tr;
       } else if (password.isNotEmpty && !RegExp(r'\d').hasMatch(password)) {
-        error = "Password must contain at least one number";
+        error = "Password must contain at least one number".tr;
       } else if (password.isNotEmpty && !RegExp(r'[@$!%*#?&]').hasMatch(password)) {
-        error = "Password must contain at least one special character (@\$!%*#?&)";
+        error = "Password must contain at least one special character (@\$!%*#?&)".tr;
       } else if (confirmPassword.isNotEmpty && password != confirmPassword) {
-        error = "Passwords do not match";
+        error = "Passwords do not match".tr;
       }
 
     if (_passwordError != error) {
@@ -6769,8 +7090,8 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password changed successfully!'),
+         SnackBar(
+          content: Text('Password changed successfully!'.tr),
           backgroundColor: Colors.green,
         ),
       );
@@ -6782,7 +7103,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
     } else if (authProvider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage!),
+          content: Text(authProvider.errorMessage!.tr),
           backgroundColor: Colors.red,
         ),
       );
@@ -6806,20 +7127,20 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'CREATE PASSWORD',
+               Text(
+                'CREATE_PASSWORD'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2C2C2C),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Your new password must be different from previous used passwords.',
+               Text(
+                'your_new_password_must_be_different_from_previous_used_passwords'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -6835,7 +7156,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    hintText: 'password'.tr,
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -6864,7 +7185,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    hintText: 'Confirm Password',
+                    hintText: 'confirm_password'.tr,
                     hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -6907,9 +7228,9 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Sign out from all devices',
-                    style: TextStyle(
+                   Text(
+                    'sign_out_from_all_devices'.tr,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF2C2C2C),
                     ),
@@ -6935,8 +7256,8 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                             width: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Confirm password',
+                        :  Text(
+                            'confirm_password'.tr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -6958,8 +7279,10 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 === C:\Projects\Reporting System\lib\screens\auth\forgot_password_screen.dart ===
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reporting_system/services/localization_service.dart';
 import '../../services/auth_provider.dart';
 import 'otp_verification_screen.dart';
+
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -6986,7 +7309,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _validateEmail() {
     final email = _emailController.text;
-    final bool isValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
+    final bool isValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+".tr).hasMatch(email);
     if (_isEmailValid != isValid) {
       setState(() {
         _isEmailValid = isValid;
@@ -7039,20 +7362,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              const Text(
-                'FORGET PASSWORD',
+               Text(
+                'forget_password'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2C2C2C),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Please enter your email to receive a verification code.',
+               Text(
+                'please_enter_your_email_to_receive_a_verification_code'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -7067,11 +7390,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'Email',
-                    hintStyle: TextStyle(color: Colors.grey),
+                  decoration:  InputDecoration(
+                    hintText: 'email'.tr,
+                    hintStyle: const TextStyle(color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                 ),
               ),
@@ -7094,9 +7417,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             width: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Send Code',
-                            style: TextStyle(
+                        :  Text(
+                            'send_code'.tr,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -7118,6 +7441,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:reporting_system/services/localization_service.dart';
 import '../../services/auth_provider.dart';
 import 'create_new_password_screen.dart';
 import '../../main.dart'; // To navigate to MainScreen
@@ -7226,8 +7550,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Code resent successfully!'),
+        SnackBar(
+          content: Text('code_resent_successfully'.tr),
           backgroundColor: Colors.green,
         ),
       );
@@ -7258,10 +7582,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'CONFIRMATION CODE',
+               Text(
+                'confirmation_code'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF2C2C2C),
@@ -7269,7 +7593,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Enter the 6-digit code sent to\n${widget.email}',
+                '${'enter_the_6_digit_code_sent_to'.tr}\n${widget.email}'.tr,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
@@ -7339,9 +7663,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             width: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text(
-                            'Verify',
-                            style: TextStyle(
+                        :  Text(
+                            'verify'.tr,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -7356,16 +7680,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        "Don't receive the code? ",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      Text(
+                        "dont_receive_the_code".tr,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                       GestureDetector(
                         onTap: authProvider.canResend ? _handleResend : null,
                         child: Text(
                           authProvider.canResend
-                              ? "Resend"
-                              : "Resend in ${authProvider.resendCountdown}s",
+                              ? "resend".tr
+                              : "${'resend_in'.tr} ${authProvider.resendCountdown}s",
                           style: TextStyle(
                             color: authProvider.canResend ? const Color(0xFF1E5EFF) : Colors.grey,
                             fontSize: 14,
@@ -7503,7 +7827,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // print("User stats: ${response.body}");
+      print("User stats: ${response.body}");
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to fetch stats');
@@ -8184,6 +8508,7 @@ class LocalizationService {
       'report_summary': 'My Report Summary',
       'all_time': 'All Time',
       'this_month': 'this month',
+
       // Report Status
       'report_status': 'Report Status',
       'tracking_id': 'Tracking ID',
@@ -8367,6 +8692,8 @@ class LocalizationService {
       'login': 'Log In',
       'sign_up': 'Sign Up',
       'email_phone': 'Phone Number / Email',
+      'email': 'Email',
+      'phone': 'Phone Number',
       'password': 'Password',
       'national_id': 'National ID',
       'create_new_account': 'Create New Account',
@@ -8377,7 +8704,6 @@ class LocalizationService {
       'invalid_credentials': 'Invalid email/phone or password',
       'registration_failed': 'Registration failed',
       'full_name': 'Full Name',
-      'phone_number': 'Phone Number',
       'create_account': 'Create Account',
       'already_have_account': 'Already have an account?',
       'login_here': 'Login here',
@@ -8386,6 +8712,18 @@ class LocalizationService {
       'done': 'Done',
       'Updated_successfully': 'Updated successfully',
       'Image_cropped_successfully': 'Image cropped successfully',
+      'select_language': 'Select Language',
+      'Arabic': 'العربية',
+      'English': 'English',
+      'save': 'Save',
+      'forgot_password': 'Forgot Password',
+      'Report_incidents_quickly_and_easily': 'Report incidents quickly & easily',
+      'Your_safety_our_priority': 'Your safety is our priority',
+      'Fast_&_secure_incident_reporting': 'Fast & secure incident reporting',
+      'Smart_reporting_for_a_safer_workplace': 'Smart reporting for a safer workplace',
+
+
+
 
       // Validation
       'invalid_phone': 'Invalid phone number',
@@ -8395,18 +8733,15 @@ class LocalizationService {
       'logout_confirm_title': 'Log Out',
       'logout_confirm_msg': 'Are you sure you want to log out?',
       'delete_confirm_title': 'Delete Account',
-      'delete_confirm_msg':
-          'Are you sure? Your account will be permanently deleted.',
+      'delete_confirm_msg': 'Are you sure? Your account will be permanently deleted.',
       'cancel': 'Cancel',
       'yes': 'Yes',
       'ok': 'OK',
-      'delete_account_warning':
-          'This action is irreversible. All your data will be permanently lost.',
+      'delete_account_warning': 'This action is irreversible. All your data will be permanently lost.',
       'enter_your_password': 'Enter your password',
       'reason_for_leaving': 'Reason for leaving (Optional)',
       'tell_us_why': 'Tell us why you are deleting your account...',
-      'delete_confirmation_text':
-          'I understand that this action is permanent and cannot be undone.',
+      'delete_confirmation_text': 'I understand that this action is permanent and cannot be undone.',
       'please_confirm_deletion': 'Please confirm deletion',
       'failed_to_delete_account': 'Failed to delete account',
       'password_required': 'Password is required',
@@ -8415,6 +8750,30 @@ class LocalizationService {
       'edit_profile_image': 'Edit Profile Image',
       'Failed_to_upload_image': 'Failed to upload image',
       'upload_image_failed': 'Failed to Edit image',
+
+      // Change Password
+      'CREATE_PASSWORD': 'Create Password',
+      'your_new_password_must_be_different_from_previous_used_passwords': 'Your new password must be different from previous used passwords.',
+      'sign_out_from_all_devices': 'Sign out from all devices',
+      'Password_changed_successfully': 'Password changed successfully',
+      'error': 'Error',
+      'failed_to_update_password': 'Failed to update password',
+      'Please_enter_new_password': 'Please enter new password',
+      'Passwords_do_not_match': 'Passwords do not match',
+      
+      // forget password
+      'forget_password': 'Forget Password',
+      'send_code': 'Send Code',
+      'please_enter_your_email_to_receive_a_verification_code': 'Please enter your email to receive a verification code',
+
+      
+      // otp verification screen
+      'confirmation_code': 'Confirmation Code',
+      'enter_the_6_digit_code_sent_to': 'Enter the 6-digit code sent to',
+      'verify': 'Verify',
+      'dont_receive_the_code': 'Don\'t receive the code?',
+      'resend': 'Resend',
+      'resend_in': 'Resend in',
     },
     'ar': {
       // App
@@ -8473,10 +8832,8 @@ class LocalizationService {
       'Medical_Emergency': 'حالة طبية طارئة',
       'Public_Disturbance': 'إزعاج عام',
       'Other': 'أخرى',
-      'e.g.,_Broken_Streetlight_on_Main_St.':
-          'مثال: عمود إنارة مكسور في شارع رئيسي',
-      'Describe_the_issue_in_detail,_the_more_information,_the_better.':
-          'صف المشكلة بالتفصيل، كلما زادت المعلومات، كان ذلك أفضل.',
+      'e.g.,_Broken_Streetlight_on_Main_St.': 'مثال: عمود إنارة مكسور في شارع رئيسي',
+      'Describe_the_issue_in_detail,_the_more_information,_the_better.': 'صف المشكلة بالتفصيل، كلما زادت المعلومات، كان ذلك أفضل.',
       'Select_a_category': 'اختر نوع البلاغ',
       'Please_select_a_category': 'يرجى تحديد نوع البلاغ',
       'Please_attach_an_image': 'يرجى إرفاق صورة',
@@ -8493,10 +8850,8 @@ class LocalizationService {
       'loading_address': 'جاري تحميل العنوان...',
       'unknown_location': 'موقع غير معروف',
       'error_fetching_address': 'خطأ في جلب العنوان',
-      'tap_to_select_location_on_map':
-          'اضغط لتحديد الموقع على الخريطة',
-      'select_location_on_map':
-          'اختر الموقع على الخريطة',
+      'tap_to_select_location_on_map': 'اضغط لتحديد الموقع على الخريطة',
+      'select_location_on_map': 'اختر الموقع على الخريطة',
       'error_loading_map': 'خطأ في تحميل الخريطة',
       'tap_to_pinpoint_location': 'اضغط لتحديد الموقع بدقة',
       'Location_pin_dropped': 'تم تحديد موقع الدبوس',
@@ -8509,10 +8864,8 @@ class LocalizationService {
       'enable_location': 'تفعيل الموقع',
       'open_settings': 'فتح الإعدادات',
       'location_permission_denied': 'تم رفض إذن الموقع',
-      'location_permission_denied_desc':
-          'يرجى السماح بإذن الموقع لاستخدام هذه الميزة.',
-      'location_services_disabled_desc':
-          'يرجى تفعيل خدمات الموقع لاستخدام هذه الميزة.',
+      'location_permission_denied_desc': 'يرجى السماح بإذن الموقع لاستخدام هذه الميزة.',
+      'location_services_disabled_desc': 'يرجى تفعيل خدمات الموقع لاستخدام هذه الميزة.',
 
       // Review Report
       'review_report': 'مراجعة البلاغ',
@@ -8520,10 +8873,8 @@ class LocalizationService {
       'edit_report': 'تعديل البلاغ',
       'ai_classification': 'نتيجة تصنيف الذكاء الاصطناعي',
       'incident_type': 'نوع البلاغ',
-      'Based_on_your_initial_analysis_the_report_will_be_browsed_to_Police_&_Traffic':
-          'بناءً على تحليلك الأولي، سيتم إرسال البلاغ إلى الشرطة والمرور',
-      'AI_Classification_Result_Traffic_Accident_Severity_High':
-          'نتيجة تصنيف الذكاء الاصطناعي: حادث مروري - شدة: عالية',
+      'Based_on_your_initial_analysis_the_report_will_be_browsed_to_Police_&_Traffic': 'بناءً على تحليلك الأولي، سيتم إرسال البلاغ إلى الشرطة والمرور',
+      'AI_Classification_Result_Traffic_Accident_Severity_High': 'نتيجة تصنيف الذكاء الاصطناعي: حادث مروري - شدة: عالية',
       'Confirm_&_Send_Report_Now': 'تأكيد وإرسال البلاغ الآن',
       'unknown': 'غير معروف',
 
@@ -8559,12 +8910,9 @@ class LocalizationService {
       // Change Email
       'new_email': 'البريد الإلكتروني الجديد',
       'sorry_error_parsing_data': 'عذراً، حدث خطأ في تحليل البيانات من الخادم.',
-      'no_internet_connection':
-          'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
-      'notification_path_not_found':
-          'لم يتم العثور على مسار الإشعارات على الخادم.',
-      'an_unexpected_error_occurred':
-          'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
+      'no_internet_connection': 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
+      'notification_path_not_found': 'لم يتم العثور على مسار الإشعارات على الخادم.',
+      'an_unexpected_error_occurred': 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.',
       'please_enter': 'يرجى إدخال',
       'profile_updated_successfully': 'تم تحديث الملف الشخصي بنجاح',
       'Failed_to_update_profile': 'فشل تحديث الملف الشخصي',
@@ -8594,17 +8942,12 @@ class LocalizationService {
       'retry': 'إعادة المحاولة',
       'no_results_found': 'لا توجد نتائج',
       'no_notifications_yet': 'لا توجد إشعارات',
-      'notification_path_not_found_on_the_server':
-          'مسار الإشعار غير موجود على الخادم.',
+      'notification_path_not_found_on_the_server': 'مسار الإشعار غير موجود على الخادم.',
       'the_requested_page_was_not_found': 'الصفحة المطلوبة غير موجودة.',
-      'please_login_again_to_view_notifications':
-          'يرجى تسجيل الدخول مرة أخرى لعرض الإشعارات.',
-      'an_unexpected_error_occurred_please_try_again_later':
-          'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.',
-      'sorry_there_was_an_error_parsing_data_from_the_server':
-          'عذرًا، حدث خطأ في تحليل البيانات من الخادم.',
-      'no_internet_connection_please_check_your_network':
-          'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
+      'please_login_again_to_view_notifications': 'يرجى تسجيل الدخول مرة أخرى لعرض الإشعارات.',
+      'an_unexpected_error_occurred_please_try_again_later': 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.',
+      'sorry_there_was_an_error_parsing_data_from_the_server': 'عذرًا، حدث خطأ في تحليل البيانات من الخادم.',
+      'no_internet_connection_please_check_your_network': 'لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.',
 
       // Categories
       'traffic_accident': 'حادث مروري',
@@ -8616,6 +8959,8 @@ class LocalizationService {
       'login': 'تسجيل الدخول',
       'sign_up': 'إنشاء حساب',
       'email_phone': 'رقم الهاتف / البريد الإلكتروني',
+      'email': 'البريد الإلكتروني',
+      'phone': 'رقم الهاتف',
       'password': 'كلمة المرور',
       'national_id': 'الرقم القومي',
       'create_new_account': 'إنشاء حساب جديد',
@@ -8623,8 +8968,7 @@ class LocalizationService {
       'smart_incident_system': 'نظام البلاغات الذكي',
       'password_min_length': 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
       'passwords_not_match': 'كلمات المرور غير متطابقة',
-      'invalid_credentials':
-          'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة',
+      'invalid_credentials': 'البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة',
       'registration_failed': 'فشل التسجيل',
       'full_name': 'الاسم الكامل',
       'phone_number': 'رقم الهاتف',
@@ -8638,6 +8982,16 @@ class LocalizationService {
       'done': 'تم',
       'Updated_successfully': 'تم التحديث',
       'Image_cropped_successfully': 'تم تعديل الصورة بنجاح',
+      'select_language': 'اختر اللغة',
+      'save': 'حفظ',
+      'Arabic': 'العربية',
+      'English': 'English',
+      'forgot_password': 'نسيت كلمة المرور',
+      'Report_incidents_quickly_and_easily': 'أبلغ عن الحوادث بسرعة وأمان',
+      'Your_safety_our_priority': 'سلامتك أولويتنا',
+      'Fast_secure_incident_reporting': 'إبلاغ سريع وآمن',
+      'Smart_reporting_for_a_safer_workplace': 'إبلاغ ذكي لمكان عمل أكثر أماناً',
+      
 
       // Dialogs
       'logout_confirm_title': 'تسجيل الخروج',
@@ -8647,13 +9001,11 @@ class LocalizationService {
       'cancel': 'إلغاء',
       'yes': 'نعم',
       'ok': 'موافق',
-      'delete_account_warning':
-          'هذا الإجراء لا رجعة فيه. سيتم فقد جميع بياناتك بشكل دائم.',
+      'delete_account_warning': 'هذا الإجراء لا رجعة فيه. سيتم فقد جميع بياناتك بشكل دائم.',
       'enter_your_password': 'أدخل كلمة المرور',
       'reason_for_leaving': 'سبب المغادرة (اختياري)',
       'tell_us_why': 'أخبرنا سبب حذف حسابك...',
-      'delete_confirmation_text':
-          'أنا أفهم أن هذا الإجراء دائم ولا يمكن التراجع عنه.',
+      'delete_confirmation_text': 'أنا أفهم أن هذا الإجراء دائم ولا يمكن التراجع عنه.',
       'please_confirm_deletion': 'يرجى تأكيد الحذف',
       'failed_to_delete_account': 'فشل حذف الحساب',
       'password_required': 'كلمة المرور مطلوبة',
@@ -8661,7 +9013,30 @@ class LocalizationService {
       'select_your_profile_image': 'اختر صورة الملف الشخصي',
       'edit_profile_image': 'تعديل صورة الملف الشخصي',
       'upload_image_failed': 'فشل تعديل الصورة',
-      
+
+      // Change Password
+      'CREATE_PASSWORD': 'إنشاء كلمة مرور',
+      'your_new_password_must_be_different_from_previous_used_passwords': 'يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمات المرور المستخدمة سابقًا.',
+      'sign_out_from_all_devices': 'تسجيل الخروج من جميع الأجهزة',
+      'Password_changed_successfully': 'تم تغيير كلمة المرور بنجاح',
+      'error': 'خطأ',
+      'failed_to_update_password': 'فشل تحديث كلمة المرور',
+      'Please_enter_new_password': 'يرجى إدخال كلمة المرور الجديدة',
+      'Passwords_do_not_match': 'كلمات المرور غير متطابقة',
+
+      // forget password
+      'forget_password': 'نسيت كلمة المرور',
+      'send_code': 'إرسال الرمز',
+      'please_enter_your_email_to_receive_a_verification_code': 'يرجى إدخال بريدك الإلكتروني لاستلام رمز التحقق',
+
+
+      // otp verification screen
+      'confirmation_code': 'رمز التحقق',
+      'enter_the_6_digit_code_sent_to': 'أدخل رمز التحقق المكون من 6 أرقام المرسل إلى',
+      'verify': 'تحقق',
+      'dont_receive_the_code': 'لم تستلم الرمز؟ ',
+      'resend': 'إعادة إرسال',
+      'resend_in': 'إعادة الإرسال في',
     },
   };
 

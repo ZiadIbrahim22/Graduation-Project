@@ -304,6 +304,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                                     aiTag: report.aiTag ?? "unknown_tag".tr,
                                     confidence: report.formattedConfidence ??
                                         "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                                    allCategories: report.allCategories, // ✅ جديد
                                   ),
                                 );
                               },

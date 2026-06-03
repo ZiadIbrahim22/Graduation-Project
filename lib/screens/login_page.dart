@@ -28,14 +28,14 @@ class _LoginPageState extends State<LoginPage>
   late Animation<double> _fade;
   late Animation<Offset> _slide;
 
-  late final AnimationController _subtitleController;
-final List<String> _subtitles = [
-  'Report_incidents_quickly_and_easily',
-  'Your_safety_our_priority',
-  'Fast_&_secure_incident_reporting',
-  'Smart_reporting_for_a_safer_workplace',
-];
-int _currentSubtitleIndex = 0;
+  // ── Subtitles Keys (مش الترجمة نفسها) ──
+  final List<String> _subtitleKeys = [
+    'Report_incidents_quickly_and_easily',
+    'Your_safety_our_priority',
+    'Fast_secure_incident_reporting',
+    'Smart_reporting_for_a_safer_workplace',
+  ];
+  int _currentSubtitleIndex = 0;
 
   @override
   void initState() {
@@ -52,14 +52,14 @@ int _currentSubtitleIndex = 0;
     _selectedLanguage = LocalizationService.currentLocale.value.languageCode;
     LocalizationService.currentLocale.addListener(_onLocaleChanged);
 
-
-     Timer.periodic(const Duration(seconds: 3), (timer) {
-    if (mounted) {
-      setState(() {
-        _currentSubtitleIndex = (_currentSubtitleIndex + 1) % _subtitles.length;
-      });
-    }
-  });
+    // ── Timer للـ subtitles ──
+    Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentSubtitleIndex = (_currentSubtitleIndex + 1) % _subtitleKeys.length;
+        });
+      }
+    });
   }
 
   void _onLocaleChanged() {
@@ -77,7 +77,6 @@ int _currentSubtitleIndex = 0;
     _controller.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _subtitleController.dispose();
     super.dispose();
   }
 
@@ -96,7 +95,6 @@ int _currentSubtitleIndex = 0;
       ),
       builder: (context) {
         return Directionality(
-          // Bottom sheet always follows current language direction
           textDirection: _selectedLanguage == 'ar'
               ? TextDirection.rtl
               : TextDirection.ltr,
@@ -113,7 +111,6 @@ int _currentSubtitleIndex = 0;
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Handle bar
                     Center(
                       child: Container(
                         width: 40,
@@ -125,8 +122,6 @@ int _currentSubtitleIndex = 0;
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Title row — always LTR so icon stays left of text
                     Directionality(
                       textDirection: TextDirection.ltr,
                       child: Row(
@@ -157,7 +152,6 @@ int _currentSubtitleIndex = 0;
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     _buildLanguageOption(
                       flag: '🇸🇦',
                       language: 'العربية',
@@ -166,7 +160,6 @@ int _currentSubtitleIndex = 0;
                       onTap: () => setModalState(() => tempLanguage = 'ar'),
                     ),
                     const SizedBox(height: 12),
-
                     _buildLanguageOption(
                       flag: '🇺🇸',
                       language: 'English',
@@ -175,7 +168,6 @@ int _currentSubtitleIndex = 0;
                       onTap: () => setModalState(() => tempLanguage = 'en'),
                     ),
                     const SizedBox(height: 28),
-
                     SizedBox(
                       width: double.infinity,
                       height: 54,
@@ -237,7 +229,6 @@ int _currentSubtitleIndex = 0;
             width: 1.5,
           ),
         ),
-        // Always LTR: flag → name → spacer → radio
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Row(
@@ -331,15 +322,7 @@ int _currentSubtitleIndex = 0;
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // ══════════════════════════════════════════
-                  //  HEADER — completely isolated from RTL
-                  //  Uses a plain Stack with manual coordinates
-                  //  so the language button is ALWAYS top-right
-                  //  and the icon+title are ALWAYS centered.
-                  // ══════════════════════════════════════════
                   Directionality(
-                    // Force LTR for the entire header so Positioned
-                    // widgets are never flipped by RTL.
                     textDirection: TextDirection.ltr,
                     child: Container(
                       width: double.infinity,
@@ -353,7 +336,6 @@ int _currentSubtitleIndex = 0;
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // ── Centered content ──────────────
                           Padding(
                             padding:
                                 const EdgeInsets.fromLTRB(60, 40, 60, 40),
@@ -374,8 +356,6 @@ int _currentSubtitleIndex = 0;
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                // Use real text (not .tr) here so we can
-                                // control alignment manually
                                 Text(
                                   'app_title'.tr,
                                   textAlign: TextAlign.center,
@@ -396,7 +376,7 @@ int _currentSubtitleIndex = 0;
                                       opacity: animation,
                                       child: SlideTransition(
                                         position: Tween<Offset>(
-                                          begin: const Offset(0, 0.3), // بييجي من تحت شوية
+                                          begin: const Offset(0, 0.3),
                                           end: Offset.zero,
                                         ).animate(CurvedAnimation(
                                           parent: animation,
@@ -407,8 +387,8 @@ int _currentSubtitleIndex = 0;
                                     );
                                   },
                                   child: Text(
-                                    _subtitles[_currentSubtitleIndex].tr,
-                                    key: ValueKey<int>(_currentSubtitleIndex), // مهم علشان الـ AnimatedSwitcher يعرف يبدل
+                                    _subtitleKeys[_currentSubtitleIndex].tr,
+                                    key: ValueKey<int>(_currentSubtitleIndex),
                                     textAlign: TextAlign.center,
                                     textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                                     style: TextStyle(
@@ -420,11 +400,6 @@ int _currentSubtitleIndex = 0;
                               ],
                             ),
                           ),
-
-                          // ── Language button — pinned top-right ──
-                          // Positioned uses LTR coordinates (right=16
-                          // always means right edge) because the parent
-                          // Directionality is forced to LTR above.
                           Positioned(
                             top: 12,
                             right: 16,
@@ -470,9 +445,6 @@ int _currentSubtitleIndex = 0;
 
                   const SizedBox(height: 30),
 
-                  // ══════════════════════════════════════════
-                  //  BODY — follows language direction
-                  // ══════════════════════════════════════════
                   Directionality(
                     textDirection: isArabic
                         ? TextDirection.rtl
@@ -548,7 +520,6 @@ int _currentSubtitleIndex = 0;
                               },
                             ),
 
-                            // Forgot password — end-aligned
                             Align(
                               alignment: isArabic
                                   ? Alignment.centerLeft
@@ -564,9 +535,7 @@ int _currentSubtitleIndex = 0;
                                   );
                                 },
                                 child: Text(
-                                  isArabic
-                                      ? 'نسيت كلمة المرور؟'
-                                      : 'Forgot Password?',
+                                  'forgot_password'.tr,
                                   style: const TextStyle(
                                     color: Color(0xFF1e3a8a),
                                     fontSize: 14,

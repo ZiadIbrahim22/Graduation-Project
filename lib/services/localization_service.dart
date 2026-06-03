@@ -522,7 +522,7 @@ class LocalizationService {
       'forgot_password': 'نسيت كلمة المرور',
       'Report_incidents_quickly_and_easily': 'أبلغ عن الحوادث بسرعة وأمان',
       'Your_safety_our_priority': 'سلامتك أولويتنا',
-      'Fast_&_secure_incident_reporting': 'إبلاغ سريع وآمن',
+      'Fast_secure_incident_reporting': 'إبلاغ سريع وآمن',
       'Smart_reporting_for_a_safer_workplace': 'إبلاغ ذكي لمكان عمل أكثر أماناً',
       
 

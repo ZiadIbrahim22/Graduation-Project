@@ -11,6 +11,7 @@ class ReportCard extends StatelessWidget {
   final String date;
   final String aiTag;
   final String confidence;
+  final List<String> allCategories; // ✅ جديد: كل الـ categories لعرض الـ secondary
 
   const ReportCard({
     super.key,
@@ -22,6 +23,7 @@ class ReportCard extends StatelessWidget {
     required this.date,
     required this.aiTag,
     required this.confidence,
+    this.allCategories = const [], // ✅ optional للـ backward compatibility
   });
 
   Color _getStatusBackgroundColor(BuildContext context) {
@@ -63,6 +65,13 @@ class ReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ✅ هل في category تاني غير الـ primary؟
+    final hasSecondCategory = allCategories.length > 1;
+    final secondCategory = hasSecondCategory ? allCategories[1] : null;
+    final secondColor = secondCategory != null
+        ? Report.getColorForType(secondCategory)
+        : Colors.grey;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -71,7 +80,7 @@ class ReportCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isDark 
+            color: isDark
                 ? Colors.black.withValues(alpha: 0.3)
                 : Colors.grey.withValues(alpha: 0.1),
             blurRadius: 5,
@@ -82,6 +91,7 @@ class ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header: Report ID + Status Badge ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -111,9 +121,16 @@ class ReportCard extends StatelessWidget {
               ),
             ],
           ),
+
           const SizedBox(height: 12),
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFe5e7eb)),
+          Divider(
+              height: 1,
+              color: isDark
+                  ? const Color(0xFF333333)
+                  : const Color(0xFFe5e7eb)),
           const SizedBox(height: 12),
+
+          // ── Body: Icon + Details ──
           Row(
             children: [
               Container(
@@ -129,6 +146,8 @@ class ReportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    // ── Incident Type + Secondary Category Badge ──
                     Row(
                       children: [
                         Text(
@@ -136,25 +155,65 @@ class ReportCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white60 : const Color(0xFF6b7280),
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF6b7280),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            incidentType,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : const Color(0xFF1a1a1a),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              // ✅ Primary category
+                              Flexible(
+                                child: Text(
+                                  incidentType,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1a1a1a),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                              // ✅ Secondary category badge (لو موجود)
+                              if (hasSecondCategory) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: secondColor.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color:
+                                          secondColor.withValues(alpha: 0.45),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    secondCategory!,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: secondColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
+
+                    // ── Confidence ──
                     Row(
                       children: [
                         Text(
@@ -162,7 +221,9 @@ class ReportCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white60 : const Color(0xFF6b7280),
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF6b7280),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -172,7 +233,9 @@ class ReportCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : const Color(0xFF1a1a1a),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1a1a1a),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -180,17 +243,25 @@ class ReportCard extends StatelessWidget {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
+
+                    // ── Date ──
                     Row(
                       children: [
                         Icon(Icons.access_time,
-                            size: 14, color: isDark ? Colors.white38 : const Color(0xFF9ca3af)),
+                            size: 14,
+                            color: isDark
+                                ? Colors.white38
+                                : const Color(0xFF9ca3af)),
                         const SizedBox(width: 4),
                         Text(
                           date,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? Colors.white38 : const Color(0xFF9ca3af),
+                            color: isDark
+                                ? Colors.white38
+                                : const Color(0xFF9ca3af),
                           ),
                         ),
                       ],
