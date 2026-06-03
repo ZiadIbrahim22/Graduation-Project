@@ -21,7 +21,9 @@ class Report {
   final Color? iconColor;
   final String? aiTag;
   final double? confidence;
+  final double? secondConfidence;
   final String? formattedConfidence;
+  final String? formattedConfidence2;
   final Map<String, double> aiScores;   // {"Accident": 0.73, "Fire": 0.66}
   final List<String> allCategories;     // ["Accident", "Fire"] مرتبة تنازليًا
 
@@ -39,7 +41,9 @@ class Report {
     this.iconColor,
     this.aiTag,
     this.confidence,
+    this.secondConfidence,
     this.formattedConfidence,
+    this.formattedConfidence2,
     this.aiScores = const {},
     this.allCategories = const [],
   });
@@ -60,8 +64,12 @@ class Report {
     final primaryCategory =
         allCategories.isNotEmpty ? allCategories.first : 'Other';
 
+    final secondPrimaryCategory =
+        allCategories.length > 1 ? allCategories[1] : 'Other';
+
     // ✅ Confidence من aiScores مباشرةً
     final primaryConfidence = aiScores[primaryCategory];
+    final secondConfidence = aiScores[secondPrimaryCategory];
 
     return Report(
       id: json['report_ID']?.toString() ?? '0',
@@ -81,7 +89,9 @@ class Report {
       iconColor: getColorForType(primaryCategory),
       aiTag: json['aiTag'] ?? json['ai_tag'],
       confidence: primaryConfidence,
+      secondConfidence: secondConfidence,
       formattedConfidence: _formatConfidence(primaryConfidence),
+      formattedConfidence2: _formatConfidence(secondConfidence),
       aiScores: aiScores,
       allCategories: allCategories,
     );

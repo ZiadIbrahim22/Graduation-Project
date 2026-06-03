@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:reporting_system/services/localization_service.dart';
 import '../models/report.dart';
@@ -11,7 +13,9 @@ class ReportCard extends StatelessWidget {
   final String date;
   final String aiTag;
   final String confidence;
-  final List<String> allCategories; // ✅ جديد: كل الـ categories لعرض الـ secondary
+  final String confidence2;
+  final List<String>
+      allCategories; // ✅ جديد: كل الـ categories لعرض الـ secondary
 
   const ReportCard({
     super.key,
@@ -23,6 +27,7 @@ class ReportCard extends StatelessWidget {
     required this.date,
     required this.aiTag,
     required this.confidence,
+    required this.confidence2,
     this.allCategories = const [], // ✅ optional للـ backward compatibility
   });
 
@@ -68,9 +73,7 @@ class ReportCard extends StatelessWidget {
     // ✅ هل في category تاني غير الـ primary؟
     final hasSecondCategory = allCategories.length > 1;
     final secondCategory = hasSecondCategory ? allCategories[1] : null;
-    final secondColor = secondCategory != null
-        ? Report.getColorForType(secondCategory)
-        : Colors.grey;
+    final secondColor = Color(0xFF1e3a8a);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -125,9 +128,8 @@ class ReportCard extends StatelessWidget {
           const SizedBox(height: 12),
           Divider(
               height: 1,
-              color: isDark
-                  ? const Color(0xFF333333)
-                  : const Color(0xFFe5e7eb)),
+              color:
+                  isDark ? const Color(0xFF333333) : const Color(0xFFe5e7eb)),
           const SizedBox(height: 12),
 
           // ── Body: Icon + Details ──
@@ -146,7 +148,6 @@ class ReportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // ── Incident Type + Secondary Category Badge ──
                     Row(
                       children: [
@@ -169,7 +170,7 @@ class ReportCard extends StatelessWidget {
                                 child: Text(
                                   incidentType,
                                   style: TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: isDark
                                         ? Colors.white
@@ -183,22 +184,22 @@ class ReportCard extends StatelessWidget {
                               // ✅ Secondary category badge (لو موجود)
                               if (hasSecondCategory) ...[
                                 const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: secondColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color:
-                                          secondColor.withValues(alpha: 0.45),
-                                      width: 1,
-                                    ),
+                                Text(
+                                  ",",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : const Color(0xFF6b7280),
                                   ),
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
                                   child: Text(
                                     secondCategory!,
                                     style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: secondColor,
                                     ),
@@ -227,11 +228,11 @@ class ReportCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
+                        Flexible(
                           child: Text(
                             confidence,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: isDark
                                   ? Colors.white
@@ -241,6 +242,32 @@ class ReportCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (hasSecondCategory) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            ",",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF6b7280),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              confidence2,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: secondColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
 

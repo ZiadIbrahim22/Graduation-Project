@@ -114,7 +114,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      print("User stats: ${response.body}");
+      // print("User stats: ${response.body}");
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to fetch stats');

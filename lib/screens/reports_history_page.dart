@@ -82,7 +82,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
               child: SizeTransition(
                 sizeFactor: animation,
                 axis: Axis.horizontal,
-                axisAlignment: -1, // يبدأ من الشمال
+                axisAlignment: -1, 
                 child: child,
               ),
             );
@@ -91,8 +91,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
               ? Container(
                   key: const ValueKey('search'),
                   height: 40,
-                  // ✅ ثبت العرض عشان ميحصلش قفزة
-                  width: MediaQuery.of(context).size.width - 100, // اطرح مساحة الـ actions
+                  width: MediaQuery.of(context).size.width - 100,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -304,6 +303,8 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                                     aiTag: report.aiTag ?? "unknown_tag".tr,
                                     confidence: report.formattedConfidence ??
                                         "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                                    confidence2: report.formattedConfidence2 ??
+                                        "${(report.secondConfidence ?? 0).toStringAsFixed(0)} %",
                                     allCategories: report.allCategories, // ✅ جديد
                                   ),
                                 );

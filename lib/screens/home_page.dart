@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage>
         setState(() {
           _stats = {
             "totalReports": stats['totalReports'] ?? 0,
-            "thisMonth": stats['thisMonth'] ?? 0,
+            "thisMonth": stats['countReportsInMonth'] ?? 0,
             "pending": stats['pendingCount'] ?? 0,
             "inProgress": stats['inProgressCount'] ?? 0,
             "solved": stats['resolvedCount'] ?? 0,
@@ -154,10 +154,13 @@ class _HomePageState extends State<HomePage>
                                     valueListenable: UserService().currentUser,
                                     builder: (context, user, child) {
                                       String? imageUrl = user?.profileImage;
-                                      final isDark = Theme.of(context).brightness == Brightness.dark;
-                                      final initial = user?.fullName.isNotEmpty == true
-                                          ? user!.fullName[0].toUpperCase()
-                                          : '?';
+                                      final isDark =
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark;
+                                      final initial =
+                                          user?.fullName.isNotEmpty == true
+                                              ? user!.fullName[0].toUpperCase()
+                                              : '?';
 
                                       return Container(
                                         width: 50,
@@ -165,30 +168,39 @@ class _HomePageState extends State<HomePage>
                                         decoration: BoxDecoration(
                                           gradient: isDark
                                               ? const LinearGradient(
-                                                  colors: [Color(0xFF0f172a), Color(0xFF1e3a8a)],
+                                                  colors: [
+                                                    Color(0xFF0f172a),
+                                                    Color(0xFF1e3a8a)
+                                                  ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
                                                 )
                                               : const LinearGradient(
-                                                  colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)],
+                                                  colors: [
+                                                    Color(0xFF1e3a8a),
+                                                    Color(0xFF3b82f6)
+                                                  ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
                                                 ),
                                           shape: BoxShape.circle,
                                         ),
                                         clipBehavior: Clip.antiAlias,
-                                        child: (imageUrl != null && imageUrl.isNotEmpty)
+                                        child: (imageUrl != null &&
+                                                imageUrl.isNotEmpty)
                                             ? Image.network(
                                                 imageUrl,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
                                                   return Center(
                                                     child: Text(
                                                       initial,
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 20,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   );
@@ -209,7 +221,8 @@ class _HomePageState extends State<HomePage>
                                   ),
                                   const SizedBox(width: 12),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'welcome'.tr,
@@ -223,12 +236,13 @@ class _HomePageState extends State<HomePage>
                                         ),
                                       ),
                                       ValueListenableBuilder<UserModel?>(
-                                        valueListenable: UserService().currentUser,
+                                        valueListenable:
+                                            UserService().currentUser,
                                         builder: (context, user, _) {
                                           return Text(
                                             "${user?.fullName ?? 'User'}!",
                                             style: TextStyle(
-                                              fontSize: 20,
+                                              fontSize: 22,
                                               fontWeight: FontWeight.bold,
                                               color: Theme.of(context)
                                                       .textTheme
@@ -268,11 +282,13 @@ class _HomePageState extends State<HomePage>
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const NotificationCenterPage(),
+                                        builder: (context) =>
+                                            const NotificationCenterPage(),
                                       ),
                                     );
                                   },
-                                  child: const Icon(Icons.notifications_none, size: 28),
+                                  child: const Icon(Icons.notifications_none,
+                                      size: 28),
                                 ),
                               ),
                               if ((_stats['notifications'] ?? 0) > 0)
@@ -374,11 +390,14 @@ class _HomePageState extends State<HomePage>
                                   ),
                                   const SizedBox(height: 16),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "${_stats['totalReports']} ${'total_reports'.tr}",
@@ -408,7 +427,16 @@ class _HomePageState extends State<HomePage>
                                                   ),
                                                 ),
                                                 TextSpan(
-                                                  text: "+${_stats['thisMonth']} ${'this_month'.tr}",
+                                                  text:
+                                                      "+${_stats['thisMonth']}",
+                                                  style: TextStyle(
+                                                    color: const Color.fromARGB(255, 0, 172, 6),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: " ${'this_month'.tr}",
                                                   style: TextStyle(
                                                     color: Theme.of(context)
                                                             .textTheme
@@ -441,8 +469,10 @@ class _HomePageState extends State<HomePage>
                                   SizedBox(
                                     height: 200,
                                     child: ReportChart(
-                                      pending: _stats['pending']?.toDouble() ?? 0,
-                                      inProgress: _stats['inProgress']?.toDouble() ?? 0,
+                                      pending:
+                                          _stats['pending']?.toDouble() ?? 0,
+                                      inProgress:
+                                          _stats['inProgress']?.toDouble() ?? 0,
                                       solved: _stats['solved']?.toDouble() ?? 0,
                                     ),
                                   ),
