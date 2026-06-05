@@ -28,15 +28,14 @@ class AppNotification {
     DateTime parsedDate = json['created_at'] != null
       ? DateTime.parse(json['created_at'])
       : DateTime.now();
-    
-    DateTime adjustedDate = parsedDate.add(const Duration(hours: 2));
+    DateTime adjustedDate = parsedDate;
+    // DateTime adjustedDate = parsedDate.add(const Duration(hours: 2));
 
     return AppNotification(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
-      timeAgo: json['time_ago'] ??
-          '', // Assuming API might send pre-calculated or handle in client
+      timeAgo: json['time_ago'] ?? '', // Assuming API might send pre-calculated or handle in client
       isRead: json['is_read'] ?? false,
       type: json['type'] ?? 'update',
       createdAt: adjustedDate,

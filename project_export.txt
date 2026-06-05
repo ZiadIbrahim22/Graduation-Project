@@ -444,15 +444,14 @@ class AppNotification {
     DateTime parsedDate = json['created_at'] != null
       ? DateTime.parse(json['created_at'])
       : DateTime.now();
-    
-    DateTime adjustedDate = parsedDate.add(const Duration(hours: 2));
+    DateTime adjustedDate = parsedDate;
+    // DateTime adjustedDate = parsedDate.add(const Duration(hours: 2));
 
     return AppNotification(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
-      timeAgo: json['time_ago'] ??
-          '', // Assuming API might send pre-calculated or handle in client
+      timeAgo: json['time_ago'] ?? '', // Assuming API might send pre-calculated or handle in client
       isRead: json['is_read'] ?? false,
       type: json['type'] ?? 'update',
       createdAt: adjustedDate,
@@ -475,7 +474,7 @@ class Report {
   final String id;
   final String title;
   final String description;
-  final String incidentType;
+  final String incidentType; // الـ primary category (الأعلى score)
   final String location;
   final double? latitude;
   final double? longitude;
@@ -485,7 +484,11 @@ class Report {
   final Color? iconColor;
   final String? aiTag;
   final double? confidence;
+  final double? secondConfidence;
   final String? formattedConfidence;
+  final String? formattedConfidence2;
+  final Map<String, double> aiScores;   // {"Accident": 0.73, "Fire": 0.66}
+  final List<String> allCategories;     // ["Accident", "Fire"] مرتبة تنازليًا
 
   Report({
     required this.id,
@@ -501,25 +504,41 @@ class Report {
     this.iconColor,
     this.aiTag,
     this.confidence,
+    this.secondConfidence,
     this.formattedConfidence,
+    this.formattedConfidence2,
+    this.aiScores = const {},
+    this.allCategories = const [],
   });
 
-  // Factory constructor to create a Report from JSON
   factory Report.fromJson(Map<String, dynamic> json) {
-    // ✅ FIX 1: بنقرأ الـ category من كل الأسماء المحتملة في الـ API
-    // API بيبعت: displayCategory, reportCategory, finalCategory
-    final String category = json['displayCategory'] ??
-        json['reportCategory'] ??
-        json['finalCategory'] ??
-        json['category'] ??
-        'Other';
+
+    // ✅ المصدر الوحيد: ai_Score فقط
+    // "Accident:0.73,Fire:0.66" → {"Accident": 0.73, "Fire": 0.66}
+    final aiScores = _parseAiScores(json['ai_Score']);
+
+    // ✅ allCategories مرتبة تنازليًا حسب الـ score (الأعلى أول)
+    final allCategories = (aiScores.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value)))
+        .map((e) => e.key)
+        .toList();
+
+    // ✅ Primary = الأعلى score (أول واحد في اللستة)
+    final primaryCategory =
+        allCategories.isNotEmpty ? allCategories.first : 'Other';
+
+    final secondPrimaryCategory =
+        allCategories.length > 1 ? allCategories[1] : 'Other';
+
+    // ✅ Confidence من aiScores مباشرةً
+    final primaryConfidence = aiScores[primaryCategory];
+    final secondConfidence = aiScores[secondPrimaryCategory];
 
     return Report(
       id: json['report_ID']?.toString() ?? '0',
       title: json['title'] ?? 'No Title',
       description: json['description'] ?? '',
-      // ✅ FIX 1: استخدام الـ category المستخرج من الـ API مباشرةً
-      incidentType: category,
+      incidentType: primaryCategory,
       location: json['location'] ?? '',
       latitude: json['latitude'] != null
           ? double.tryParse(json['latitude'].toString())
@@ -529,51 +548,42 @@ class Report {
           : null,
       date: _parseDate(json),
       status: _parseStatus(json['status'] ?? json['initialStatus'] ?? 'pending'),
-      // ✅ FIX 1: الـ icon والـ color بيتحددوا من الـ category الصح
-      icon: getIconForType(category),
-      iconColor: getColorForType(category),
+      icon: getIconForType(primaryCategory),
+      iconColor: getColorForType(primaryCategory),
       aiTag: json['aiTag'] ?? json['ai_tag'],
-      confidence: _parseConfidence(json),
-      formattedConfidence: _parseFormattedConfidence(json),
+      confidence: primaryConfidence,
+      secondConfidence: secondConfidence,
+      formattedConfidence: _formatConfidence(primaryConfidence),
+      formattedConfidence2: _formatConfidence(secondConfidence),
+      aiScores: aiScores,
+      allCategories: allCategories,
     );
   }
 
-  // ✅ Parse confidence بأمان من أي نوع (num أو String)
-  static double? _parseConfidence(Map<String, dynamic> json) {
-    final raw = json['confidence'] ??
-        json['aiConfidence'] ??
-        json['ai_confidence'] ??
-        json['Confidence'];
-    if (raw == null) return null;
-    if (raw is num) return raw.toDouble();
-    if (raw is String) {
-      // Handle values like "52", "52%", "0.89"
-      return double.tryParse(raw.replaceAll('%', '').trim());
+  // ✅ Parse "Accident:0.73,Fire:0.66" → {"Accident": 0.73, "Fire": 0.66}
+  static Map<String, double> _parseAiScores(dynamic raw) {
+    if (raw == null || raw.toString().isEmpty) return {};
+    final result = <String, double>{};
+    for (final part in raw.toString().split(',')) {
+      final kv = part.trim().split(':');
+      if (kv.length == 2) {
+        final type = kv[0].trim();
+        final score = double.tryParse(kv[1].trim());
+        if (score != null && type.isNotEmpty) {
+          result[type] = score;
+        }
+      }
     }
-    return null;
+    return result;
   }
 
-  // ✅ FIX 2: لو الـ confidence بين 0 و1 (decimal) بنضربها في 100
-  // API بيبعت 0.89 → يظهر "89 %" مش "1 %"
-  static String? _parseFormattedConfidence(Map<String, dynamic> json) {
-    // أول: جرب لو في formattedConfidence جاهز من الـ API
-    final raw = json['formattedConfidence'] ??
-        json['FormattedConfidence'] ??
-        json['formatted_confidence'];
-    if (raw != null && raw.toString().isNotEmpty) return raw.toString();
-
-    // تاني: احسبها من الـ raw confidence
-    final conf = _parseConfidence(json);
-    if (conf != null && conf > 0) {
-      // ✅ FIX 2: لو القيمة <= 1 معناها decimal (0.89) → اضربها في 100 = 89%
-      // لو القيمة > 1 معناها هي بالفعل كـ percentage (89) → استخدمها مباشرةً
-      final displayValue = conf <= 1.0 ? conf * 100 : conf;
-      return "${displayValue.toStringAsFixed(0)} %";
-    }
-    return null;
+  // ✅ Format: 0.73 → "73 %"  |  73 → "73 %"
+  static String? _formatConfidence(double? conf) {
+    if (conf == null || conf <= 0) return null;
+    final displayValue = conf <= 1.0 ? conf * 100 : conf;
+    return "${displayValue.toStringAsFixed(0)} %";
   }
 
-  // Helper to parse date from various possible field names
   static DateTime _parseDate(Map<String, dynamic> json) {
     final dateStr = json['submittedAt'] ??
         json['created_at'] ??
@@ -585,7 +595,6 @@ class Report {
     return DateTime.now();
   }
 
-  // Helper method to parse status string to enum
   static ReportStatus _parseStatus(String status) {
     switch (status.toString().toLowerCase()) {
       case 'solved':
@@ -600,7 +609,6 @@ class Report {
     }
   }
 
-  // Helper method to determine icon based on incident type
   static IconData getIconForType(String? type) {
     switch (type?.toLowerCase()) {
       case 'fire':
@@ -1810,7 +1818,7 @@ class _HomePageState extends State<HomePage>
         setState(() {
           _stats = {
             "totalReports": stats['totalReports'] ?? 0,
-            "thisMonth": stats['thisMonth'] ?? 0,
+            "thisMonth": stats['countReportsInMonth'] ?? 0,
             "pending": stats['pendingCount'] ?? 0,
             "inProgress": stats['inProgressCount'] ?? 0,
             "solved": stats['resolvedCount'] ?? 0,
@@ -1869,10 +1877,13 @@ class _HomePageState extends State<HomePage>
                                     valueListenable: UserService().currentUser,
                                     builder: (context, user, child) {
                                       String? imageUrl = user?.profileImage;
-                                      final isDark = Theme.of(context).brightness == Brightness.dark;
-                                      final initial = user?.fullName.isNotEmpty == true
-                                          ? user!.fullName[0].toUpperCase()
-                                          : '?';
+                                      final isDark =
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark;
+                                      final initial =
+                                          user?.fullName.isNotEmpty == true
+                                              ? user!.fullName[0].toUpperCase()
+                                              : '?';
 
                                       return Container(
                                         width: 50,
@@ -1880,30 +1891,39 @@ class _HomePageState extends State<HomePage>
                                         decoration: BoxDecoration(
                                           gradient: isDark
                                               ? const LinearGradient(
-                                                  colors: [Color(0xFF0f172a), Color(0xFF1e3a8a)],
+                                                  colors: [
+                                                    Color(0xFF0f172a),
+                                                    Color(0xFF1e3a8a)
+                                                  ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
                                                 )
                                               : const LinearGradient(
-                                                  colors: [Color(0xFF1e3a8a), Color(0xFF3b82f6)],
+                                                  colors: [
+                                                    Color(0xFF1e3a8a),
+                                                    Color(0xFF3b82f6)
+                                                  ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
                                                 ),
                                           shape: BoxShape.circle,
                                         ),
                                         clipBehavior: Clip.antiAlias,
-                                        child: (imageUrl != null && imageUrl.isNotEmpty)
+                                        child: (imageUrl != null &&
+                                                imageUrl.isNotEmpty)
                                             ? Image.network(
                                                 imageUrl,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) {
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
                                                   return Center(
                                                     child: Text(
                                                       initial,
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 20,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   );
@@ -1924,7 +1944,8 @@ class _HomePageState extends State<HomePage>
                                   ),
                                   const SizedBox(width: 12),
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'welcome'.tr,
@@ -1938,12 +1959,13 @@ class _HomePageState extends State<HomePage>
                                         ),
                                       ),
                                       ValueListenableBuilder<UserModel?>(
-                                        valueListenable: UserService().currentUser,
+                                        valueListenable:
+                                            UserService().currentUser,
                                         builder: (context, user, _) {
                                           return Text(
                                             "${user?.fullName ?? 'User'}!",
                                             style: TextStyle(
-                                              fontSize: 20,
+                                              fontSize: 22,
                                               fontWeight: FontWeight.bold,
                                               color: Theme.of(context)
                                                       .textTheme
@@ -1983,11 +2005,13 @@ class _HomePageState extends State<HomePage>
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const NotificationCenterPage(),
+                                        builder: (context) =>
+                                            const NotificationCenterPage(),
                                       ),
                                     );
                                   },
-                                  child: const Icon(Icons.notifications_none, size: 28),
+                                  child: const Icon(Icons.notifications_none,
+                                      size: 28),
                                 ),
                               ),
                               if ((_stats['notifications'] ?? 0) > 0)
@@ -2089,11 +2113,14 @@ class _HomePageState extends State<HomePage>
                                   ),
                                   const SizedBox(height: 16),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "${_stats['totalReports']} ${'total_reports'.tr}",
@@ -2123,7 +2150,16 @@ class _HomePageState extends State<HomePage>
                                                   ),
                                                 ),
                                                 TextSpan(
-                                                  text: "+${_stats['thisMonth']} ${'this_month'.tr}",
+                                                  text:
+                                                      "+${_stats['thisMonth']}",
+                                                  style: TextStyle(
+                                                    color: const Color.fromARGB(255, 0, 172, 6),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: " ${'this_month'.tr}",
                                                   style: TextStyle(
                                                     color: Theme.of(context)
                                                             .textTheme
@@ -2156,8 +2192,10 @@ class _HomePageState extends State<HomePage>
                                   SizedBox(
                                     height: 200,
                                     child: ReportChart(
-                                      pending: _stats['pending']?.toDouble() ?? 0,
-                                      inProgress: _stats['inProgress']?.toDouble() ?? 0,
+                                      pending:
+                                          _stats['pending']?.toDouble() ?? 0,
+                                      inProgress:
+                                          _stats['inProgress']?.toDouble() ?? 0,
                                       solved: _stats['solved']?.toDouble() ?? 0,
                                     ),
                                   ),
@@ -2175,6 +2213,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 }
+
 
 === C:\Projects\Reporting System\lib\screens\login_page.dart ===
 import 'dart:async';
@@ -3521,8 +3560,7 @@ class _NotificationCenterPageState extends State<NotificationCenterPage>
 
               String getFriendlyErrorMessage(String error) {
                 if (error.contains('FormatException')) {
-                  return "sorry_there_was_an_error_parsing_data_from_the_server"
-                      .tr;
+                  return "sorry_there_was_an_error_parsing_data_from_the_server".tr;
                 } else if (error.contains('SocketException')) {
                   return "no_internet_connection_please_check_your_network".tr;
                 } else if (error.contains('Hey ya!')) {
@@ -3532,8 +3570,7 @@ class _NotificationCenterPageState extends State<NotificationCenterPage>
                 } else if (error.contains('User not authenticated')) {
                   return "please_login_again_to_view_notifications".tr;
                 } else {
-                  return "an_unexpected_error_occurred_please_try_again_later"
-                      .tr;
+                  return "an_unexpected_error_occurred_please_try_again_later".tr;
                 }
               }
 
@@ -6164,7 +6201,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
               child: SizeTransition(
                 sizeFactor: animation,
                 axis: Axis.horizontal,
-                axisAlignment: -1, // يبدأ من الشمال
+                axisAlignment: -1, 
                 child: child,
               ),
             );
@@ -6173,8 +6210,7 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
               ? Container(
                   key: const ValueKey('search'),
                   height: 40,
-                  // ✅ ثبت العرض عشان ميحصلش قفزة
-                  width: MediaQuery.of(context).size.width - 100, // اطرح مساحة الـ actions
+                  width: MediaQuery.of(context).size.width - 100,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -6386,6 +6422,9 @@ class _ReportsHistoryPageState extends State<ReportsHistoryPage>
                                     aiTag: report.aiTag ?? "unknown_tag".tr,
                                     confidence: report.formattedConfidence ??
                                         "${(report.confidence ?? 0).toStringAsFixed(0)} %",
+                                    confidence2: report.formattedConfidence2 ??
+                                        "${(report.secondConfidence ?? 0).toStringAsFixed(0)} %",
+                                    allCategories: report.allCategories, // ✅ جديد
                                   ),
                                 );
                               },
@@ -7827,7 +7866,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      print("User stats: ${response.body}");
+      // print("User stats: ${response.body}");
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to fetch stats');
@@ -9968,6 +10007,8 @@ class NotificationCard extends StatelessWidget {
 
 
 === C:\Projects\Reporting System\lib\widgets\report_card.dart ===
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:reporting_system/services/localization_service.dart';
 import '../models/report.dart';
@@ -9981,6 +10022,9 @@ class ReportCard extends StatelessWidget {
   final String date;
   final String aiTag;
   final String confidence;
+  final String confidence2;
+  final List<String>
+      allCategories; // ✅ جديد: كل الـ categories لعرض الـ secondary
 
   const ReportCard({
     super.key,
@@ -9992,6 +10036,8 @@ class ReportCard extends StatelessWidget {
     required this.date,
     required this.aiTag,
     required this.confidence,
+    required this.confidence2,
+    this.allCategories = const [], // ✅ optional للـ backward compatibility
   });
 
   Color _getStatusBackgroundColor(BuildContext context) {
@@ -10033,6 +10079,11 @@ class ReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ✅ هل في category تاني غير الـ primary؟
+    final hasSecondCategory = allCategories.length > 1;
+    final secondCategory = hasSecondCategory ? allCategories[1] : null;
+    final secondColor = Color(0xFF1e3a8a);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -10041,7 +10092,7 @@ class ReportCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isDark 
+            color: isDark
                 ? Colors.black.withValues(alpha: 0.3)
                 : Colors.grey.withValues(alpha: 0.1),
             blurRadius: 5,
@@ -10052,6 +10103,7 @@ class ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header: Report ID + Status Badge ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -10081,9 +10133,15 @@ class ReportCard extends StatelessWidget {
               ),
             ],
           ),
+
           const SizedBox(height: 12),
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFe5e7eb)),
+          Divider(
+              height: 1,
+              color:
+                  isDark ? const Color(0xFF333333) : const Color(0xFFe5e7eb)),
           const SizedBox(height: 12),
+
+          // ── Body: Icon + Details ──
           Row(
             children: [
               Container(
@@ -10099,6 +10157,7 @@ class ReportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Incident Type + Secondary Category Badge ──
                     Row(
                       children: [
                         Text(
@@ -10106,25 +10165,65 @@ class ReportCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white60 : const Color(0xFF6b7280),
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF6b7280),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            incidentType,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : const Color(0xFF1a1a1a),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              // ✅ Primary category
+                              Flexible(
+                                child: Text(
+                                  incidentType,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1a1a1a),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                              // ✅ Secondary category badge (لو موجود)
+                              if (hasSecondCategory) ...[
+                                const SizedBox(width: 6),
+                                Text(
+                                  ",",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : const Color(0xFF6b7280),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    secondCategory!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: secondColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
+
+                    // ── Confidence ──
                     Row(
                       children: [
                         Text(
@@ -10132,35 +10231,73 @@ class ReportCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white60 : const Color(0xFF6b7280),
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF6b7280),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
+                        Flexible(
                           child: Text(
                             confidence,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : const Color(0xFF1a1a1a),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1a1a1a),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (hasSecondCategory) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            ",",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF6b7280),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              confidence2,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: secondColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
+
                     const SizedBox(height: 6),
+
+                    // ── Date ──
                     Row(
                       children: [
                         Icon(Icons.access_time,
-                            size: 14, color: isDark ? Colors.white38 : const Color(0xFF9ca3af)),
+                            size: 14,
+                            color: isDark
+                                ? Colors.white38
+                                : const Color(0xFF9ca3af)),
                         const SizedBox(width: 4),
                         Text(
                           date,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? Colors.white38 : const Color(0xFF9ca3af),
+                            color: isDark
+                                ? Colors.white38
+                                : const Color(0xFF9ca3af),
                           ),
                         ),
                       ],
@@ -10175,6 +10312,7 @@ class ReportCard extends StatelessWidget {
     );
   }
 }
+
 
 === C:\Projects\Reporting System\lib\widgets\report_chart.dart ===
 import 'package:fl_chart/fl_chart.dart';

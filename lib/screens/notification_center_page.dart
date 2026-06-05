@@ -95,8 +95,7 @@ class _NotificationCenterPageState extends State<NotificationCenterPage>
 
               String getFriendlyErrorMessage(String error) {
                 if (error.contains('FormatException')) {
-                  return "sorry_there_was_an_error_parsing_data_from_the_server"
-                      .tr;
+                  return "sorry_there_was_an_error_parsing_data_from_the_server".tr;
                 } else if (error.contains('SocketException')) {
                   return "no_internet_connection_please_check_your_network".tr;
                 } else if (error.contains('Hey ya!')) {
@@ -106,8 +105,7 @@ class _NotificationCenterPageState extends State<NotificationCenterPage>
                 } else if (error.contains('User not authenticated')) {
                   return "please_login_again_to_view_notifications".tr;
                 } else {
-                  return "an_unexpected_error_occurred_please_try_again_later"
-                      .tr;
+                  return "an_unexpected_error_occurred_please_try_again_later".tr;
                 }
               }
 
